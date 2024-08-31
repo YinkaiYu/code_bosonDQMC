@@ -278,23 +278,23 @@ contains
         real(kind=8), dimension(Naux, LqTherm, LtrotTherm), intent(in) :: phi_therm
         class(kagomeLattice), intent(in) :: Latt
         integer :: nt, ntt, nx, ny, ii, iit, nc
-        integer :: n_list_therm(LqTherm, 1:2), inv_n_list_therm(NlxTherm, NlyTherm)
+        integer :: cell_list_therm(LqTherm, 1:2), inv_cell_list_therm(NlxTherm, NlyTherm)
 
         nc = 0
         do ny = 1, NlyTherm
             do nx = 1, NlxTherm
                 nc = nc + 1
-                n_list_therm(nc, 1) = nx
-                n_list_therm(nc, 2) = ny
-                inv_n_list_therm(nx, ny) = nc
+                cell_list_therm(nc, 1) = nx
+                cell_list_therm(nc, 2) = ny
+                inv_cell_list_therm(nx, ny) = nc
             enddo
         enddo
 ! copy NsigL_K
         do nt = 1, LtrotTherm
             do ny = 1, NlyTherm
                 do nx = 1, NlxTherm
-                    iit = inv_n_list_therm(nx, ny)
-                    ii = Latt%inv_n_list(nx, ny)
+                    iit = inv_cell_list_therm(nx, ny)
+                    ii = Latt%inv_cell_list(nx, ny)
                     phi(:, ii, nt) = phi_therm(:, iit, nt)
                 enddo
             enddo
@@ -302,8 +302,8 @@ contains
         do nt = 1, LtrotTherm
             do ny = 1, NlyTherm
                 do nx = NlxTherm+1, Nlx
-                    iit = inv_n_list_therm(nx - NlxTherm, ny)
-                    ii = Latt%inv_n_list(nx, ny)
+                    iit = inv_cell_list_therm(nx - NlxTherm, ny)
+                    ii = Latt%inv_cell_list(nx, ny)
                     phi(:, ii, nt) = phi_therm(:, iit, nt)
                 enddo
             enddo
@@ -311,8 +311,8 @@ contains
         do nt = 1, LtrotTherm
             do ny = NlyTherm+1, Nly
                 do nx = 1, NlxTherm
-                    iit = inv_n_list_therm(nx, ny - NlyTherm)
-                    ii = Latt%inv_n_list(nx, ny)
+                    iit = inv_cell_list_therm(nx, ny - NlyTherm)
+                    ii = Latt%inv_cell_list(nx, ny)
                     phi(:, ii, nt) = phi_therm(:, iit, nt)
                 enddo
             enddo
@@ -320,8 +320,8 @@ contains
         do nt = 1, LtrotTherm
             do ny = NlyTherm+1, Nly
                 do nx = NlxTherm+1, Nlx
-                    iit = inv_n_list_therm(nx - NlxTherm, ny - NlyTherm)
-                    ii = Latt%inv_n_list(nx, ny)
+                    iit = inv_cell_list_therm(nx - NlxTherm, ny - NlyTherm)
+                    ii = Latt%inv_cell_list(nx, ny)
                     phi(:, ii, nt) = phi_therm(:, iit, nt)
                 enddo
             enddo
@@ -329,7 +329,7 @@ contains
         do nt = LtrotTherm+1, Ltrot
             do ny = 1, Nly
                 do nx = 1, Nlx
-                    ii = Latt%inv_n_list(nx, ny)
+                    ii = Latt%inv_cell_list(nx, ny)
                     ntt = nt - LtrotTherm
                     phi(:, ii, nt) = phi(:, ii, ntt)
                 enddo

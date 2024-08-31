@@ -7,7 +7,7 @@ module CalcBasic ! Global parameters
     real(kind=8),           parameter           :: upbound = 1.0d+200
 ! lattice parameters
     integer,                parameter           :: Norb  = 3  ! orbital/sublattice A,B,C in kagome lattice
-    integer,                parameter           :: Nsub  = 3  ! sublattice for observables calculation
+    integer,                parameter           :: Nsub  = 3  ! sublattice for observables calculation; the same as Norb
     integer,                parameter           :: Nbond = 2  ! bonds per site: A->B/C, B->C/A, C->A/B
     integer,                parameter           :: Naux  = 2  ! flavor number of auxiliary field, respectively for U1 term and U2 term
     integer,                public              :: Nlx, Nly, NlxTherm, NlyTherm
@@ -16,7 +16,6 @@ module CalcBasic ! Global parameters
     real(kind=8),           public              :: Dtau
     real(kind=8),           public              :: Beta
     integer,                public              :: Ltrot, LtrotTherm
-    integer,                public              :: Lfam
 ! Hamiltonian parameters
     real(kind=8),           public,     save    :: RT
     real(kind=8),           public,     save    :: RU1, RU2
@@ -90,7 +89,6 @@ contains
         LqTherm = NlxTherm * NlyTherm
         Dtau = Beta / dble(Ltrot)
         Ndim = Lq * Norb
-        Lfam = int(Lq / Nsub)
         if (mod(Ltrot, Nwrap) == 0) then
             Nst = Ltrot / Nwrap
         else
@@ -158,7 +156,6 @@ contains
             write(50,*) 'N_Ortho                                        :', Nwrap
             write(50,*) '# Bins                                         :', Nbin
             write(50,*) '# Nsweep in one bin                            :', Nsweep
-            write(50,*) 'Length of fam.                                 :', Lfam
             write(50,*) '# Cores                                        :', ISIZE
             if (mod(Ltrot, Nwrap) .NE. 0) then
                 write(50,*) 'Ltrot is not a multiple of Nwrap'; stop

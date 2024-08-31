@@ -96,8 +96,8 @@ contains
 ! iit is now being processed. Any site processed should be marked and thus not to be processed again
                 this%is_marked(iit) = .true.
 ! as a part of the cluster, it is now flipped
-                ii = Latt%t_list(iit, 1)
-                nti = Latt%t_list(iit, 2)
+                ii = Latt%dimt_list(iit, 1)
+                nti = Latt%dimt_list(iit, 2)
                 vec_old(:) = NsigL_K%phi(:, ii, nti)
                 vec_new = spin_reflect(vec_old, theta)
                 phi_new(:, ii, nti) = vec_new(:) ! output
@@ -107,8 +107,8 @@ contains
                     jjt = Latt%LT_bonds(iit, nf)
                     if (.not. this%is_marked(jjt)) then
                         eff_bond = eff_bond + 1
-                        jj = Latt%t_list(jjt, 1)
-                        ntj = Latt%t_list(jjt, 2)
+                        jj = Latt%dimt_list(jjt, 1)
+                        ntj = Latt%dimt_list(jjt, 2)
                         vec_j(:) = NsigL_K%phi(:, jj, ntj)
                         if (nf .le. 2*Nbond) then ! space-adjacent
                             dif = action_dif(vec_new, vec_old, vec_j, .true.)

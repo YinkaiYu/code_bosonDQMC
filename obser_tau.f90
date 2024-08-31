@@ -79,10 +79,10 @@ contains
         do jj = 1, Lq
             do ii = 1, Lq
                 imj = Latt%imj(ii, jj)
-                i1 = Latt%inv_o_list(ii, 1)
-                i2 = Latt%inv_o_list(ii, 2)
-                j1 = Latt%inv_o_list(jj, 1)
-                j2 = Latt%inv_o_list(jj, 2)
+                i1 = Latt%inv_dim_list(ii, 1)
+                i2 = Latt%inv_dim_list(ii, 2)
+                j1 = Latt%inv_dim_list(jj, 1)
+                j2 = Latt%inv_dim_list(jj, 2)
 ! SDW susceptibility (bosonic)
                 this%spin_tau(imj, ntau) = this%spin_tau(imj, ntau) &
                     &   + NsigL_K%phi(1, ii, ntau) * NsigL_K%phi(1, jj, 1) + NsigL_K%phi(2, ii, ntau) * NsigL_K%phi(2, jj, 1)
@@ -113,17 +113,17 @@ contains
                 imj = Latt%imj(ii, jj)
                 ip = Latt%L_bonds(ii, 1)
                 jp = Latt%L_bonds(jj, 1)
-                i1 = Latt%inv_o_list(ii, 1)
-                ip1 = Latt%inv_o_list(ip, 1)
-                i2 = Latt%inv_o_list(ii, 2)
-                ip2 = Latt%inv_o_list(ip, 2)
-                j1 = Latt%inv_o_list(jj, 1)
-                jp1 = Latt%inv_o_list(jp, 1)
-                j2 = Latt%inv_o_list(jj, 2)
-                jp2 = Latt%inv_o_list(jp, 2)
+                i1 = Latt%inv_dim_list(ii, 1)
+                ip1 = Latt%inv_dim_list(ip, 1)
+                i2 = Latt%inv_dim_list(ii, 2)
+                ip2 = Latt%inv_dim_list(ip, 2)
+                j1 = Latt%inv_dim_list(jj, 1)
+                jp1 = Latt%inv_dim_list(jp, 1)
+                j2 = Latt%inv_dim_list(jj, 2)
+                jp2 = Latt%inv_dim_list(jp, 2)
                 
-                iiy = Latt%n_list(ii, 2)
-                jjy = Latt%n_list(jj, 2)
+                iiy = Latt%cell_list(ii, 2)
+                jjy = Latt%cell_list(jj, 2)
                 Ai = 0.0d0
                 Aj = 0.0d0
                 phase_i_p = exp( dcmplx(0.d0, 1.d0) * Ai)

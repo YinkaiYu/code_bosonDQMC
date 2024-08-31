@@ -41,11 +41,11 @@ contains
 !  nearest bond hopping
         do no = 1, Norb
             do ii = 1, Lq
-                i_0 = Latt%inv_o_list(Latt%L_Bonds(ii, 0), no)
-                ix = Latt%n_list(ii, 1)
-                iy = Latt%n_list(ii, 2)
+                i_0 = Latt%inv_dim_list(Latt%L_Bonds(ii, 0), no)
+                ix = Latt%cell_list(ii, 1)
+                iy = Latt%cell_list(ii, 2)
                 do nf = 1, Nbond
-                    i_n = Latt%inv_o_list(Latt%L_Bonds(ii, nf), no)
+                    i_n = Latt%inv_dim_list(Latt%L_Bonds(ii, nf), no)
                     if (nf == 1) then
                         Z = dcmplx( - RT, 0.d0) 
                     elseif (nf == 2) then

@@ -71,10 +71,9 @@ contains
         do ii = 1, Lq
             vec(:) = phi(:, ii, ntau)
             call this%get_exp(vec, nflag) ! output entryC and entryS
-            if (Latt%b_list(ii, 2) == 1) sign = 1
-            if (Latt%b_list(ii, 2) == 2) sign = -1
+            sign = 1
             do no = 1, Norb
-                P(no) = Latt%inv_o_list(ii, no)
+                P(no) = Latt%inv_dim_list(ii, no)
             enddo
             Vhlp = dcmplx(0.d0, 0.d0)
             do j = 1, Ndim
@@ -105,10 +104,9 @@ contains
         do ii = 1, Lq
             vec(:) = phi(:, ii, ntau)
             call this%get_exp(vec, nflag) ! output entryC and entryS
-            if (Latt%b_list(ii, 2) == 1) sign = 1
-            if (Latt%b_list(ii, 2) == 2) sign = -1
+            sign = 1
             do no = 1, Norb
-                P(no) = Latt%inv_o_list(ii, no)
+                P(no) = Latt%inv_dim_list(ii, no)
             enddo
             Uhlp = dcmplx(0.d0, 0.d0)
             do j = 1, Ndim

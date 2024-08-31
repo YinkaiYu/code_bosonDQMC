@@ -77,10 +77,9 @@ contains
         enddo
 !   Density, spin and bond density
 		do i = 1, Ndim
-            ii = Latt%o_list(i, 1)
-            no = Latt%o_list(i, 2)
-            if (Latt%b_list(ii, 2) == 1) sign = 1
-            if (Latt%b_list(ii, 2) == 2) sign = -1
+            ii = Latt%dim_list(i, 1)
+            no = Latt%dim_list(i, 2)
+            sign = 1
             do ns = 1, Nspin
                 this%spin_occ(ns, ii) = this%spin_occ(ns, ii) + NsigL_K%phi(ns, ii, ntau) * sign
                 this%spin_avg(ns) = this%spin_avg(ns) + NsigL_K%phi(ns, ii, ntau) / dble(Lq)
@@ -89,12 +88,12 @@ contains
             this%den_occ(ii) = this%den_occ(ii) + tmpd(i)
             this%density = this%density + tmpd(i) / dble(Lq)
             do nf = 1, Nbond
-                i1 = Latt%inv_o_list(Latt%L_bonds(ii, nf), no)
+                i1 = Latt%inv_dim_list(Latt%L_bonds(ii, nf), no)
                 tmp = real(Grupc(i, i1) + Grupc(i1, i) + dconjg(Grupc(i, i1) + Grupc(i1, i)))
                 this%bond_occ(ii, nf) = this%bond_occ(ii, nf) + tmp
                 this%el_ke(nf) = this%el_ke(nf) - RT * tmp / dble(Lq)
                 if (nf == 1) then
-                    iy = Latt%n_list(ii, 2)
+                    iy = Latt%cell_list(ii, 2)
                     Ai = 0.0d0
                     phase_p = exp( dcmplx(0.d0, 1.d0) * Ai)
                     phase_m = exp(-dcmplx(0.d0, 1.d0) * Ai)

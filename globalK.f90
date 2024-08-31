@@ -26,10 +26,9 @@ contains
         Xdif = sqr_vec(vec_tmp)
         if (Xdif > Zero) then
             do no = 1, Norb
-                P(no) = Latt%inv_o_list(ii, no)
+                P(no) = Latt%inv_dim_list(ii, no)
             enddo
-            if (Latt%b_list(ii, 2) == 1) sign = 1
-            if (Latt%b_list(ii, 2) == 2) sign = -1
+            sign = 1
             call Op_K%get_delta(vec_old, vec_new, sign)
             Prod =  dcmplx(0.d0, 0.d0)
             do nr = 1, Norb
