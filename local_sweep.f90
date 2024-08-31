@@ -80,7 +80,7 @@ contains
         call this%reset(.false.)
         call Wrap_pre(Prop, WrList, 0)
         do nt = 1, Ltrot
-            if (lambda > Zero) call propK_pre(Prop, NsigL_K%phi, nt)
+            if (U1 > Zero) call propK_pre(Prop, NsigL_K%phi, nt)
             call propT_pre(Prop)
             if (mod(nt, Nwrap) == 0) call Wrap_pre(Prop, WrList, nt)
         enddo
@@ -97,7 +97,7 @@ contains
             call Obs_equal%calc(Prop, nt)
             Nobs = Nobs + 1
             call propT_L(Prop)
-            if (lambda > Zero) call LocalK_prop_L(Prop, iseed, nt)
+            if (U1 > Zero) call LocalK_prop_L(Prop, iseed, nt)
         enddo
         call Wrap_L(Prop, WrList, 0, "S")
         return
@@ -116,7 +116,7 @@ contains
         endif
         call Wrap_R(Prop, WrList, 0, "S")
         do nt = 1, Ltrot
-            if (lambda > Zero) call LocalK_prop_R(Prop, iseed, nt)
+            if (U1 > Zero) call LocalK_prop_R(Prop, iseed, nt)
             call propT_R(Prop)
             if (mod(nt, Nwrap) == 0) call Wrap_R(Prop, WrList, nt, "S")
             call Obs_equal%calc(Prop, nt)
@@ -147,7 +147,7 @@ contains
         enddo
         call Obs_equal%ave(Nobs)
         if (toggle) call Obs_tau%ave(Nobst)
-        if (lambda > Zero) call Acc_Kl%ratio()
+        if (U1 > Zero) call Acc_Kl%ratio()
         return
     end subroutine Local_sweep
     

@@ -71,7 +71,7 @@ contains
 ! Local:
         real(kind=8), external :: ranf
         real(kind=8) :: theta, xflip, random, ratio, dif
-        real(kind=8), dimension(Nspin) :: vec_old, vec_new, vec_j
+        real(kind=8), dimension(Naux) :: vec_old, vec_new, vec_j
         integer :: iit0, iit, jjt, ii, nti, jj, ntj, n, nf, eff_bond
 ! randomly choose the initial space-time site iit0 = (ii0, ntau0) of the cluster
         xflip = ranf(iseed)
@@ -135,9 +135,9 @@ contains
     
     pure function action_dif(vec_new, vec_old, vec_j, is_space)
         real(kind=8) :: action_dif
-        real(kind=8), dimension(Nspin), intent(in) :: vec_new, vec_old, vec_j
+        real(kind=8), dimension(Naux), intent(in) :: vec_new, vec_old, vec_j
         logical, intent(in) :: is_space
-        real(kind=8), dimension(Nspin) :: vec_tmp
+        real(kind=8), dimension(Naux) :: vec_tmp
         real(kind=8) :: action_new, action_old
 ! vec_new, vec_old for the marked site iit; vec_j for the unmarked site jjt
         if (is_space) then ! space-adjacent sites
@@ -147,10 +147,10 @@ contains
             action_old = sqr_vec(vec_tmp)
         else ! temporal-adjacent sites
             vec_tmp = vec_new - vec_j
-            vec_tmp = vec_tmp / (Dtau*velocity)
+            vec_tmp = vec_tmp / (Dtau)
             action_new = sqr_vec(vec_tmp)
             vec_tmp = vec_old - vec_j
-            vec_tmp = vec_tmp / (Dtau*velocity)
+            vec_tmp = vec_tmp / (Dtau)
             action_old = sqr_vec(vec_tmp)
         endif
         action_dif = (action_new - action_old) * Dtau / 2.0
@@ -158,8 +158,8 @@ contains
     end function action_dif
     
     pure function spin_reflect(vec, theta)
-        real(kind=8), dimension(Nspin) :: spin_reflect
-        real(kind=8), dimension(Nspin), intent(in) :: vec
+        real(kind=8), dimension(Naux) :: spin_reflect
+        real(kind=8), dimension(Naux), intent(in) :: vec
         real(kind=8), intent(in) :: theta
         real(kind=8) :: inner_prod
         inner_prod = vec(1)*cos(theta) + vec(2)*sin(theta)
@@ -170,7 +170,7 @@ contains
     
     subroutine Global_init(this)
         class(GlobalUpdate), intent(inout) :: this
-        allocate(phi_new(Nspin, Lq, Ltrot))
+        allocate(phi_new(Naux, Lq, Ltrot))
         phi_new = 0.d0
         allocate(this%prop)
         call this%prop%make()
@@ -213,9 +213,9 @@ contains
         
         call Wolff%reset()
         call Wolff%flip(iseed, size_cluster) ! update phi_new and size_cluster
-        do ns = 1, Nspin
+        do ns = 1, Naux
             xflip = ranf(iseed)
-            X = dble( (xflip - 0.5) * abs(valrs(ns)) )
+            X = dble( (xflip - 0.5) * abs(shiftGlb(ns)) )
             phi_new(ns, 1:Lq, 1:Ltrot) = phi_new(ns, 1:Lq, 1:Ltrot) + X
         enddo
         return
@@ -238,7 +238,7 @@ contains
         do nt = Ltrot, 1, -1
             if (mod(nt, Nwrap) == 0) call Wrap_L(this%prop, this%wrlist, nt)
             call propT_L(this%prop)
-            if (lambda > Zero) call GlobalK_prop_L(this%prop, ratio_fermion, phi_new, nt)
+            if (U1 > Zero) call GlobalK_prop_L(this%prop, ratio_fermion, phi_new, nt)
         enddo
         call Wrap_L(this%prop, this%wrlist, 0)
         ratio_boson = NsigL_K%bosonratio(phi_new)
@@ -276,7 +276,7 @@ contains
         call this%flip(iseed, size_cluster)
         call Wrap_R(this%prop, this%wrlist, 0)
         do nt = 1, Ltrot
-            if (lambda > Zero) call GlobalK_prop_R(this%prop, ratio_fermion, phi_new, nt)
+            if (U1 > Zero) call GlobalK_prop_R(this%prop, ratio_fermion, phi_new, nt)
             call propT_R(this%prop)
             if (mod(nt, Nwrap) == 0) call Wrap_R(this%prop, this%wrlist, nt)
         enddo

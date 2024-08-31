@@ -1,4 +1,4 @@
-program SpinFluctuation
+program bosonDQMC
     use LocalSweep_mod
     use GlobalUpdate_mod
     use FourierTrans_mod
@@ -80,4 +80,4 @@ program SpinFluctuation
     call Model_clear(iseed) ! conf-out
     
     call MPI_FINALIZE(IERR)
-end program SpinFluctuation
+end program bosonDQMC

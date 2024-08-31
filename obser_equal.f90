@@ -92,13 +92,13 @@ contains
                 i1 = Latt%inv_o_list(Latt%L_bonds(ii, nf), no)
                 tmp = real(Grupc(i, i1) + Grupc(i1, i) + dconjg(Grupc(i, i1) + Grupc(i1, i)))
                 this%bond_occ(ii, nf) = this%bond_occ(ii, nf) + tmp
-                this%el_ke(nf) = this%el_ke(nf) - RT(no, nf) * tmp / dble(Lq)
+                this%el_ke(nf) = this%el_ke(nf) - RT * tmp / dble(Lq)
                 if (nf == 1) then
                     iy = Latt%n_list(ii, 2)
-                    Ai = -2.d0 * Pi * NB_field * dble(iy)/dble(Lq)
+                    Ai = 0.0d0
                     phase_p = exp( dcmplx(0.d0, 1.d0) * Ai)
                     phase_m = exp(-dcmplx(0.d0, 1.d0) * Ai)
-                    this%diam = this%diam + 2.0 * RT(no, 1) * real(Grupc(i, i1) * phase_p+ Grupc(i1, i) * phase_m) / dble(Lq)
+                    this%diam = this%diam + 2.0 * RT * real(Grupc(i, i1) * phase_p+ Grupc(i1, i) * phase_m) / dble(Lq)
                 endif
             enddo
         enddo

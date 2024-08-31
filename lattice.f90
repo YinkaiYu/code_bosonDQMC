@@ -2,14 +2,14 @@ module MyLattice ! definition on space geometry
     use CalcBasic
     implicit none
     
-    type, public :: SquareLattice
+    type, public :: kagomeLattice
         integer, dimension(:,:), allocatable :: o_list, inv_o_list, n_list, inv_n_list, b_list, inv_b_list, t_list, inv_t_list
         integer, dimension(:,:), allocatable :: L_bonds, nn_bonds, LT_bonds, imj
         real(kind=8), dimension(:,:), allocatable :: xk_v, aimj_v, k_dot_r
         real(kind=8) :: a1_v(2), a2_v(2), b1_v(2), b2_v(2)
     contains
         final :: Lattice_clear
-    end type SquareLattice
+    end type kagomeLattice
     
     complex(kind=8), dimension(:,:), public, allocatable, save :: ZKRON
     
@@ -19,7 +19,7 @@ module MyLattice ! definition on space geometry
     
 contains
     subroutine Lattice_make(Latt)
-        class(SquareLattice), intent(inout) :: Latt
+        class(kagomeLattice), intent(inout) :: Latt
         integer :: i3, i2, i1, i0, i, j, nf, nc, n, no, nx, ny
         integer :: n1, n2, ndix, ii, jj, ix, jx, iy, jy, nt, iit, imjx, imjy
         
@@ -150,7 +150,7 @@ contains
     end subroutine Lattice_make
     
     subroutine Lattice_clear(this)
-        type(SquareLattice), intent(inout) :: this
+        type(kagomeLattice), intent(inout) :: this
         deallocate(this%o_list, this%inv_o_list, this%n_list, this%inv_n_list, this%b_list, this%inv_b_list, this%t_list, this%inv_t_list)
         deallocate(this%L_bonds, this%nn_bonds, this%LT_bonds, this%imj)
         deallocate(this%xk_v, this%aimj_v, this%k_dot_r)
@@ -161,7 +161,7 @@ contains
     subroutine FFT_RtoK_1(gr, gk, Latt)
         complex(kind=8), dimension(Lq),      intent(in)       :: gr
         complex(kind=8), dimension(Lq),      intent(out)     :: gk
-        type(SquareLattice),                            intent(in)       :: Latt
+        type(kagomeLattice),                            intent(in)       :: Latt
         integer :: imj, nk
         
         gk = dcmplx(0.d0, 0.d0)
@@ -177,7 +177,7 @@ contains
     subroutine FFT_RtoK_2(gr, gk, Latt)
         complex(kind=8), dimension(:,:),    intent(in)    :: gr
         complex(kind=8), dimension(:,:),    intent(out)  :: gk
-        type(SquareLattice),                         intent(in)    :: Latt
+        type(kagomeLattice),                         intent(in)    :: Latt
         integer :: imj, nk, nf, NN2
         
         NN2 = size(gr, 2)
@@ -199,7 +199,7 @@ contains
     subroutine FFT_RtoK_3(gr, gk, Latt)
         complex(kind=8), dimension(:,:,:),      intent(in)          :: gr
         complex(kind=8), dimension(:,:,:),      intent(out)        :: gk
-        type(SquareLattice),                             intent(in)          :: Latt
+        type(kagomeLattice),                             intent(in)          :: Latt
         integer :: imj, nk, nf2, nf3, NN2, NN3
         
         NN2 = size(gr, 2); NN3 = size(gr, 3)
@@ -223,7 +223,7 @@ contains
     subroutine FFT_RtoK_4(gr, gk, Latt)
         complex(kind=8), dimension(:,:,:,:),      intent(in)          :: gr
         complex(kind=8), dimension(:,:,:,:),      intent(out)        :: gk
-        type(SquareLattice),                               intent(in)          :: Latt
+        type(kagomeLattice),                               intent(in)          :: Latt
         integer :: imj, nk, nf2, nf3, nf4, NN2, NN3, NN4
         
         NN2 = size(gr, 2); NN3 = size(gr, 3); NN4 = size(gr, 4)

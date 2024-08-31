@@ -124,8 +124,8 @@ contains
                 
                 iiy = Latt%n_list(ii, 2)
                 jjy = Latt%n_list(jj, 2)
-                Ai = -2.d0 * Pi * NB_field * dble(iiy)/dble(Lq)
-                Aj = -2.d0 * Pi * NB_field * dble(jjy)/dble(Lq)
+                Ai = 0.0d0
+                Aj = 0.0d0
                 phase_i_p = exp( dcmplx(0.d0, 1.d0) * Ai)
                 phase_i_m = exp(-dcmplx(0.d0, 1.d0) * Ai)
                 phase_j_p = exp( dcmplx(0.d0, 1.d0) * Aj)
@@ -140,11 +140,11 @@ contains
                 term22 = - Gr0tup(j2, ip2) * Grt0up(i2, jp2) * phase_i_m * phase_j_m - Gr0tup(jp2, i2) * Grt0up(ip2, j2) * phase_i_p * phase_j_p &
                     &   + Gr0tup(j2, i2) * Grt0up(ip2, jp2) * phase_i_p * phase_j_m + Gr0tup(jp2, ip2) * Grt0up(i2, j2) * phase_i_m * phase_j_p
                 this%curxx_tau(imj, ntau) = this%curxx_tau(imj, ntau) &
-                    &   - RT(1,1) * RT(1,1) * term11 - RT(1,1) * RT(2,1) * (term12+term21) - RT(2,1) * RT(2,1) * term22
+                    &   - RT * RT * term11 - RT * RT * (term12+term21) - RT * RT * term22
                 term11 = dconjg(term11); term12 = dconjg(term12)
                 term21 = dconjg(term21); term22 = dconjg(term22)
                 this%curxx_tau(imj, ntau) = this%curxx_tau(imj, ntau) &
-                    &   - RT(1,1) * RT(1,1) * term11 - RT(1,1) * RT(2,1) * (term12+term21) - RT(2,1) * RT(2,1) * term22
+                    &   - RT * RT * term11 - RT * RT * (term12+term21) - RT * RT * term22
             enddo
         enddo
         return

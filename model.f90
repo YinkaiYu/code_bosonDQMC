@@ -5,7 +5,7 @@ module DQMC_Model_mod
     implicit none
     
     public
-    type(SquareLattice), allocatable :: Latt
+    type(kagomeLattice), allocatable :: Latt
     type(SpinConf), allocatable :: NsigL_K
     type(OperatorKinetic), allocatable :: Op_T
     type(OperatorPhonon) :: Op_K

@@ -1,4 +1,4 @@
-TARGET = SpinFluctuation.out
+TARGET = bosonDQMC.out
 OBJS = calc_basic.o lattice.o fields.o\
        non_interact.o operator_Yukawa.o model.o process_matrix.o\
        multiply.o obser_equal.o obser_tau.o stabilization.o\

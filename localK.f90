@@ -12,7 +12,7 @@ contains
     subroutine LocalK_init()
         call Acc_Kl%init()
         call Acc_Kt%init()
-        allocate(phi_new(Nspin, Lq, Ltrot))
+        allocate(phi_new(Naux, Lq, Ltrot))
         return
     end subroutine LocalK_init
     
@@ -42,12 +42,12 @@ contains
         real(kind=8) :: ratio_fermion, ratio_boson, ratio_re, ratio_re_abs
         real(kind=8) :: random, Xdif, xflip
         integer :: ns, P(Norb), j, no, sign, nl, nr
-        real(kind=8), dimension(Nspin) :: vec_new, vec_old
+        real(kind=8), dimension(Naux) :: vec_new, vec_old
 
 ! Local update on a two-component spin vector on space-time (ii, ntau)
-        do ns = 1, Nspin
+        do ns = 1, Naux
             xflip = ranf(iseed)
-            Xdif = dble((xflip - 0.5) * abs(valr0))
+            Xdif = dble((xflip - 0.5) * abs(shiftLoc))
             phi_new(ns, ii, ntau) = NsigL_K%phi(ns, ii, ntau) + Xdif
         enddo
         vec_new(:) = phi_new(:, ii, ntau)
@@ -146,9 +146,9 @@ contains
         real(kind=8) :: xflip, random, Xdif, ratio_boson
         integer :: ns
 
-        do ns = 1, Nspin
+        do ns = 1, Naux
             xflip = ranf(iseed)
-            Xdif = dble((xflip - 0.5) * abs(valrt(ns)))
+            Xdif = dble((xflip - 0.5) * abs(shiftWarm(ns)))
             phi_new(ns, ii, ntau) = NsigL_K%phi(ns, ii, ntau) + Xdif
         enddo
         ratio_boson = NsigL_K%bosonratio(phi_new, ii, ntau, Latt)

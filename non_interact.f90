@@ -32,7 +32,7 @@ contains
     subroutine def_hamT(HamT, Latt)
 ! Arguments: 
         complex(kind=8), dimension(Ndim, Ndim), intent(inout) :: HamT
-        class(SquareLattice), intent(in) :: Latt
+        class(kagomeLattice), intent(in) :: Latt
 ! Local: 
         complex(kind=8) :: Z
         integer :: i, ii, i_0, i_n, ix, iy, nf, no
@@ -47,14 +47,12 @@ contains
                 do nf = 1, Nbond
                     i_n = Latt%inv_o_list(Latt%L_Bonds(ii, nf), no)
                     if (nf == 1) then
-                        Z = dcmplx( - RT(no, nf), 0.d0) * &
-                            &   exp(- dcmplx(0.d0, 1.d0) * 2.d0 * Pi * NB_field * dble(iy)/dble(Lq)) ! adding one flux quanta(NB_field=1) on finite lattice under Landau gauge A=(-By,0,0)
+                        Z = dcmplx( - RT, 0.d0) 
                     elseif (nf == 2) then
                         if (iy .NE. Nly) then
-                            Z = dcmplx( - RT(no, nf), 0.d0)
+                            Z = dcmplx( - RT, 0.d0)
                         else
-                            Z = dcmplx( - RT(no, nf), 0.d0) * &
-                                &   exp( dcmplx(0.d0, 1.d0) * 2.d0 * Pi * NB_field * dble(ix)/dble(Nlx))
+                            Z = dcmplx( - RT, 0.d0) 
                         endif
                     else 
                         write(6,*) "incorrect nearest neighbor", Nbond, nf; stop
@@ -64,12 +62,6 @@ contains
                 enddo
             enddo
         enddo
-        do no = 1, Norb
-            do ii = 1, Lq
-                i = Latt%inv_o_list(ii, no)
-                HamT(i, i) = HamT(i, i) - dcmplx(mu, 0.d0) ! uniform chemical potential
-            enddo
-        enddo
         return
     end subroutine def_hamT
 
@@ -77,7 +69,7 @@ contains
         use MyMats
 ! Arguments: 
         class(OperatorKinetic), intent(inout) :: this
-        class(SquareLattice), intent(in) :: Latt
+        class(kagomeLattice), intent(in) :: Latt
 ! Local: 
 !        real(kind=8) :: degen, en_free
         integer :: i, nl, nr
