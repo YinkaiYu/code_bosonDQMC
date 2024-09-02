@@ -68,7 +68,7 @@ contains
                 call LocalK_therm(ii, nt, iseed)
             enddo
         enddo
-        call Acc_Kt%ratio()
+        call Acc_U_therm%ratio()
         return
     end subroutine Local_sweep_therm
     
@@ -147,7 +147,7 @@ contains
         enddo
         call Obs_equal%ave(Nobs)
         if (toggle) call Obs_tau%ave(Nobst)
-        if (U1 > Zero) call Acc_Kl%ratio()
+        if (U1 > Zero) call Acc_U_local%ratio()
         return
     end subroutine Local_sweep
     
@@ -156,10 +156,10 @@ contains
         logical, intent(in) :: toggle
         real(kind=8) :: collect
         collect = 0.d0
-        call MPI_Reduce(Acc_Kl%acc, collect, 1, MPI_Real8, MPI_SUM, 0, MPI_COMM_WORLD, IERR)
+        call MPI_Reduce(Acc_U_local%acc, collect, 1, MPI_Real8, MPI_SUM, 0, MPI_COMM_WORLD, IERR)
         if (IRANK == 0) then
-            Acc_Kl%acc = collect / dble(ISIZE * Nbin)
-            write(50,*) 'Accept_Klocal_shift                            :', Acc_Kl%acc
+            Acc_U_local%acc = collect / dble(ISIZE * Nbin)
+            write(50,*) 'Accept_Klocal_shift                            :', Acc_U_local%acc
         endif
         if (toggle) call Dyn%ctrl_print()
     end subroutine Local_control_print
@@ -168,10 +168,10 @@ contains
         include 'mpif.h'
         real(kind=8) :: collect
         collect = 0.d0
-        call MPI_Reduce(Acc_Kt%acc, collect, 1, MPI_Real8, MPI_SUM, 0, MPI_COMM_WORLD, IERR)
+        call MPI_Reduce(Acc_U_therm%acc, collect, 1, MPI_Real8, MPI_SUM, 0, MPI_COMM_WORLD, IERR)
         if (IRANK == 0) then
-            Acc_Kt%acc = collect / dble(ISIZE * Nwarm)
-            write(50,*) "Thermalize Accept Ratio                        :", Acc_Kt%acc
+            Acc_U_therm%acc = collect / dble(ISIZE * Nwarm)
+            write(50,*) "Thermalize Accept Ratio                        :", Acc_U_therm%acc
         endif
         return
     end subroutine Therm_control_print

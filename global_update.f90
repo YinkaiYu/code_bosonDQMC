@@ -32,7 +32,7 @@ module GlobalUpdate_mod ! a combination of shift&Wolff update
         procedure, nopass :: ctrl_print => Global_control_print
     end type GlobalUpdate
     
-    type(AccCounter) :: Acc_Kg
+    type(AccCounter) :: Acc_U_global
     type(WolffContainer), allocatable :: Wolff
     real(kind=8), dimension(:,:,:), allocatable :: phi_new
     
@@ -176,7 +176,7 @@ contains
         call this%prop%make()
         allocate(this%wrlist)
         call this%wrlist%make()
-        call Acc_Kg%init()
+        call Acc_U_global%init()
         allocate(Wolff)
         call Wolff%init()
         return
@@ -198,7 +198,7 @@ contains
         phi_new = Conf%phi_list
         call this%prop%asgn(Prop)
         call this%wrlist%asgn(WrList)
-        call Acc_Kg%reset()
+        call Acc_U_global%reset()
         return
     end subroutine Global_reset
     
@@ -245,13 +245,13 @@ contains
         ratio_re = ratio_fermion * ratio_boson
         random = ranf(iseed)
         if (ratio_re .ge. random) then
-            call Acc_Kg%count(.true.)
+            call Acc_U_global%count(.true.)
             Conf%phi_list = phi_new
             call Prop%asgn(this%prop)
             call WrList%asgn(this%wrlist)
             is_beta = .false.
         else
-            call Acc_Kg%count(.false.)
+            call Acc_U_global%count(.false.)
             phi_new = Conf%phi_list
             call this%prop%asgn(Prop)
             call this%wrlist%asgn(WrList)
@@ -284,13 +284,13 @@ contains
         ratio_re = ratio_fermion * ratio_boson
         random = ranf(iseed)
         if (ratio_re .ge. random) then
-            call Acc_Kg%count(.true.)
+            call Acc_U_global%count(.true.)
             Conf%phi_list = phi_new
             call Prop%asgn(this%prop)
             call WrList%asgn(this%wrlist)
             is_beta = .true.
         else
-            call Acc_Kg%count(.false.)
+            call Acc_U_global%count(.false.)
             phi_new = Conf%phi_list
             call this%prop%asgn(Prop)
             call this%wrlist%asgn(WrList)
@@ -318,7 +318,7 @@ contains
             endif
             size_cluster = size_cluster + dble(size_count)
         enddo
-        call Acc_Kg%ratio()
+        call Acc_U_global%ratio()
         size_cluster = size_cluster / dble(Nglobal)
         Wolff%size_cluster = Wolff%size_cluster + size_cluster
         return
@@ -328,14 +328,14 @@ contains
         include 'mpif.h'
         real(kind=8) :: collect
         collect = 0.d0
-        call MPI_Reduce(Acc_Kg%acc, collect, 1, MPI_Real8, MPI_SUM, 0, MPI_COMM_WORLD, IERR)
-        if (IRANK == 0) Acc_Kg%acc = collect / dble(ISIZE * Nbin)
+        call MPI_Reduce(Acc_U_global%acc, collect, 1, MPI_Real8, MPI_SUM, 0, MPI_COMM_WORLD, IERR)
+        if (IRANK == 0) Acc_U_global%acc = collect / dble(ISIZE * Nbin)
         collect = 0
         call MPI_Reduce(Wolff%size_cluster, collect, 1, MPI_Real8, MPI_SUM, 0, MPI_COMM_WORLD, IERR)
         if (IRANK == 0) Wolff%size_cluster = collect / dble(ISIZE * Nbin)
         if (IRANK == 0) then
             write(50,*) 'Average size of Wolff cluster                  :', Wolff%size_cluster
-            write(50,*) 'Accept_Kglobal                                 :', Acc_Kg%acc
+            write(50,*) 'Accept_Kglobal                                 :', Acc_U_global%acc
         endif
         return
     end subroutine Global_control_print
