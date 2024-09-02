@@ -85,7 +85,7 @@ contains
                 j2 = Latt%inv_dim_list(jj, 2)
 ! SDW susceptibility (bosonic)
                 this%spin_tau(imj, ntau) = this%spin_tau(imj, ntau) &
-                    &   + NsigL_K%phi(1, ii, ntau) * NsigL_K%phi(1, jj, 1) + NsigL_K%phi(2, ii, ntau) * NsigL_K%phi(2, jj, 1)
+                    &   + Conf%phi_list(1, ii, ntau) * Conf%phi_list(1, jj, 1) + Conf%phi_list(2, ii, ntau) * Conf%phi_list(2, jj, 1)
 ! pairing susceptibility
                 diag1 = Gr0tup(j1, i1) * dconjg(Gr0tup(j1, i1))
                 diag2 = Gr0tup(j2, i2) * dconjg(Gr0tup(j2, i2))

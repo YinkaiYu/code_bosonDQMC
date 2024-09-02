@@ -81,9 +81,9 @@ contains
             no = Latt%dim_list(i, 2)
             sign = 1
             do ns = 1, Nspin
-                this%spin_occ(ns, ii) = this%spin_occ(ns, ii) + NsigL_K%phi(ns, ii, ntau) * sign
-                this%spin_avg(ns) = this%spin_avg(ns) + NsigL_K%phi(ns, ii, ntau) / dble(Lq)
-                this%spin_order(ns) = this%spin_order(ns) + NsigL_K%phi(ns, ii, ntau) * sign / dble(Lq)
+                this%spin_occ(ns, ii) = this%spin_occ(ns, ii) + Conf%phi_list(ns, ii, ntau) * sign
+                this%spin_avg(ns) = this%spin_avg(ns) + Conf%phi_list(ns, ii, ntau) / dble(Lq)
+                this%spin_order(ns) = this%spin_order(ns) + Conf%phi_list(ns, ii, ntau) * sign / dble(Lq)
             enddo
             this%den_occ(ii) = this%den_occ(ii) + tmpd(i)
             this%density = this%density + tmpd(i) / dble(Lq)

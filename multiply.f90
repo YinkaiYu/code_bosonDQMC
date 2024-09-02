@@ -8,7 +8,7 @@ contains
         class(Propagator), intent(inout) :: Prop
         real(kind=8), dimension(Naux, Lq, Ltrot), intent(in) :: phi
         integer, intent(in) :: nt
-        call Op_U%mmult_R(Prop%UUR, Latt, phi, nt, 1)
+        call Op_U1%mmult_R(Prop%UUR, Latt, phi, nt, 1)
         return
     end subroutine propK_pre
     
@@ -16,9 +16,9 @@ contains
         class(Propagator), intent(inout) :: Prop
         real(kind=8), dimension(Naux, Lq, Ltrot), intent(in) :: phi
         integer, intent(in) :: nt
-        call Op_U%mmult_L(Prop%Gr, Latt, phi, nt, 1)
-        call Op_U%mmult_R(Prop%Gr, Latt, phi, nt, -1)
-        call Op_U%mmult_L(Prop%UUL, Latt, phi, nt, 1)
+        call Op_U1%mmult_L(Prop%Gr, Latt, phi, nt, 1)
+        call Op_U1%mmult_R(Prop%Gr, Latt, phi, nt, -1)
+        call Op_U1%mmult_L(Prop%UUL, Latt, phi, nt, 1)
         return
     end subroutine propK_L
     
@@ -26,9 +26,9 @@ contains
         class(Propagator), intent(inout) :: Prop
         real(kind=8), dimension(Naux, Lq, Ltrot), intent(in) :: phi
         integer, intent(in) :: nt
-        call Op_U%mmult_R(Prop%Gr, Latt, phi, nt, 1)
-        call Op_U%mmult_L(Prop%Gr, Latt, phi, nt, -1)
-        call Op_U%mmult_R(Prop%UUR, Latt, phi, nt, 1)
+        call Op_U1%mmult_R(Prop%Gr, Latt, phi, nt, 1)
+        call Op_U1%mmult_L(Prop%Gr, Latt, phi, nt, -1)
+        call Op_U1%mmult_R(Prop%UUR, Latt, phi, nt, 1)
         return
     end subroutine propK_R
     
@@ -37,11 +37,11 @@ contains
         class(PropGreen), intent(inout) :: Propgr
         real(kind=8), dimension(Naux, Lq, Ltrot), intent(in) :: phi
         integer, intent(in) :: nt
-        call Op_U%mmult_R(Propgr%Grt0, Latt, phi, nt, 1)
-        call Op_U%mmult_L(Propgr%Gr0t, Latt, phi, nt, -1)
-        call Op_U%mmult_R(Propgr%Grtt, Latt, phi, nt, 1)
-        call Op_U%mmult_L(Propgr%Grtt, Latt, phi, nt, -1)
-        call Op_U%mmult_R(Prop%UUR, Latt, phi, nt, 1)
+        call Op_U1%mmult_R(Propgr%Grt0, Latt, phi, nt, 1)
+        call Op_U1%mmult_L(Propgr%Gr0t, Latt, phi, nt, -1)
+        call Op_U1%mmult_R(Propgr%Grtt, Latt, phi, nt, 1)
+        call Op_U1%mmult_L(Propgr%Grtt, Latt, phi, nt, -1)
+        call Op_U1%mmult_R(Prop%UUR, Latt, phi, nt, 1)
         return
     end subroutine propgrK_R
     

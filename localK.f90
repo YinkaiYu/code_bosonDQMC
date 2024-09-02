@@ -24,7 +24,7 @@ contains
     subroutine LocalK_reset()
         call Acc_Kl%reset()
         call Acc_Kt%reset()
-        phi_new = NsigL_K%phi
+        phi_new = Conf%phi_list
         return
     end subroutine LocalK_reset
     
@@ -48,23 +48,23 @@ contains
         do ns = 1, Naux
             xflip = ranf(iseed)
             Xdif = dble((xflip - 0.5) * abs(shiftLoc))
-            phi_new(ns, ii, ntau) = NsigL_K%phi(ns, ii, ntau) + Xdif
+            phi_new(ns, ii, ntau) = Conf%phi_list(ns, ii, ntau) + Xdif
         enddo
         vec_new(:) = phi_new(:, ii, ntau)
-        vec_old(:) = NsigL_K%phi(:, ii, ntau)
+        vec_old(:) = Conf%phi_list(:, ii, ntau)
         do no = 1, Norb
             P(no) = Latt%inv_dim_list(ii, no)
         enddo
         sign = 1
 ! Calculate fermionic Metropolis ratio within 2*2 matrix space
-        call Op_U%get_delta(vec_old, vec_new, sign) ! update Delta matrix in Op_U
+        call Op_U1%get_delta(vec_old, vec_new, sign) ! update Delta matrix in Op_U1
         Prod = dcmplx(0.d0, 0.d0)
         do nr = 1, Norb
             do nl = 1, Norb
                 Gr_local(nl, nr) = ZKRON(nl, nr) - Gr(P(nl), P(nr))
             enddo
         enddo
-        call mmult(mat_tmp, Op_U%Delta, Gr_local) ! 2*2 matrix multiplication
+        call mmult(mat_tmp, Op_U1%Delta, Gr_local) ! 2*2 matrix multiplication
         do nr = 1, Norb
             do nl = 1, Norb
                 Prod(nl, nr) = ZKRON(nl, nr) + mat_tmp(nl, nr)
@@ -73,7 +73,7 @@ contains
         Proddet = Prod(1,1) * Prod(2,2) - Prod(1,2) * Prod(2,1)
         ratio_fermion = real(Proddet * dconjg(Proddet))
 ! Calculate total Metropolis ratio     
-        ratio_boson = NsigL_K%bosonratio(phi_new, ii, ntau, Latt)
+        ratio_boson = Conf%bosonratio(phi_new, ii, ntau, Latt)
         ratio_re = dble(ratio_fermion * ratio_boson)
         ratio_re_abs = abs(ratio_re)
         random = ranf(iseed)
@@ -91,19 +91,19 @@ contains
             do no = 1, Norb
                 do j = 1, Ndim
                     Uhlp(j, no) = Gr(j, P(no))
-                    Vhlp(no, j) = - Op_U%Delta(no, 1) * Gr(P(1), j) - Op_U%Delta(no, 2) * Gr(P(2), j)
+                    Vhlp(no, j) = - Op_U1%Delta(no, 1) * Gr(P(1), j) - Op_U1%Delta(no, 2) * Gr(P(2), j)
                 enddo
-                Vhlp(no, P(1)) = Vhlp(no, P(1)) + Op_U%Delta(no, 1)
-                Vhlp(no, P(2)) = Vhlp(no, P(2)) + Op_U%Delta(no, 2)
+                Vhlp(no, P(1)) = Vhlp(no, P(1)) + Op_U1%Delta(no, 1)
+                Vhlp(no, P(2)) = Vhlp(no, P(2)) + Op_U1%Delta(no, 2)
             enddo
             call mmult(temp, Uhlp, Prodinv)
             call mmult(Diff, temp, Vhlp)
             Gr = Gr - Diff ! output Gr in each spin-orbital sector
 ! Flip: 
-            NsigL_K%phi(:, ii, ntau) = phi_new(:, ii, ntau)
+            Conf%phi_list(:, ii, ntau) = phi_new(:, ii, ntau)
         else
             call Acc_Kl%count(.false.)
-            phi_new(:, ii, ntau) = NsigL_K%phi(:, ii, ntau)
+            phi_new(:, ii, ntau) = Conf%phi_list(:, ii, ntau)
         endif
         return
     end subroutine LocalK_metro
@@ -116,9 +116,9 @@ contains
         do ii = Lq, 1, -1
             call LocalK_metro(Prop%Gr, iseed, ii, nt)
         enddo
-        call Op_U%mmult_L(Prop%Gr, Latt, NsigL_K%phi, nt, 1)
-        call Op_U%mmult_R(Prop%Gr, Latt, NsigL_K%phi, nt, -1)
-        call Op_U%mmult_L(Prop%UUL, Latt, NsigL_K%phi, nt, 1)
+        call Op_U1%mmult_L(Prop%Gr, Latt, Conf%phi_list, nt, 1)
+        call Op_U1%mmult_R(Prop%Gr, Latt, Conf%phi_list, nt, -1)
+        call Op_U1%mmult_L(Prop%UUL, Latt, Conf%phi_list, nt, 1)
         return
     end subroutine LocalK_prop_L
     
@@ -127,12 +127,12 @@ contains
         integer, intent(inout) :: iseed
         integer, intent(in) :: nt
         integer :: ii
-        call Op_U%mmult_R(Prop%Gr, Latt, NsigL_K%phi, nt, 1)
-        call Op_U%mmult_L(Prop%Gr, Latt, NsigL_K%phi, nt, -1)
+        call Op_U1%mmult_R(Prop%Gr, Latt, Conf%phi_list, nt, 1)
+        call Op_U1%mmult_L(Prop%Gr, Latt, Conf%phi_list, nt, -1)
         do ii = 1, Lq
             call LocalK_metro(Prop%Gr, iseed, ii, nt)
         enddo
-        call Op_U%mmult_R(Prop%UUR, Latt, NsigL_K%phi, nt, 1)
+        call Op_U1%mmult_R(Prop%UUR, Latt, Conf%phi_list, nt, 1)
         return
     end subroutine LocalK_prop_R
     
@@ -148,16 +148,16 @@ contains
         do ns = 1, Naux
             xflip = ranf(iseed)
             Xdif = dble((xflip - 0.5) * abs(shiftWarm(ns)))
-            phi_new(ns, ii, ntau) = NsigL_K%phi(ns, ii, ntau) + Xdif
+            phi_new(ns, ii, ntau) = Conf%phi_list(ns, ii, ntau) + Xdif
         enddo
-        ratio_boson = NsigL_K%bosonratio(phi_new, ii, ntau, Latt)
+        ratio_boson = Conf%bosonratio(phi_new, ii, ntau, Latt)
         random = ranf(iseed)
         if (ratio_boson .gt. random) then
             call Acc_Kt%count(.true.)
-            NsigL_K%phi(:, ii, ntau) = phi_new(:, ii, ntau)
+            Conf%phi_list(:, ii, ntau) = phi_new(:, ii, ntau)
         else
             call Acc_Kt%count(.false.)
-            phi_new(:, ii, ntau) = NsigL_K%phi(:, ii, ntau)
+            phi_new(:, ii, ntau) = Conf%phi_list(:, ii, ntau)
         endif
         return
     end subroutine LocalK_therm

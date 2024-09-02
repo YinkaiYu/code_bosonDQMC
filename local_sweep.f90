@@ -80,7 +80,7 @@ contains
         call this%reset(.false.)
         call Wrap_pre(Prop, WrList, 0)
         do nt = 1, Ltrot
-            if (U1 > Zero) call propK_pre(Prop, NsigL_K%phi, nt)
+            if (U1 > Zero) call propK_pre(Prop, Conf%phi_list, nt)
             call propT_pre(Prop)
             if (mod(nt, Nwrap) == 0) call Wrap_pre(Prop, WrList, nt)
         enddo

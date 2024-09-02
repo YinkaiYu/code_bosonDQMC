@@ -2,180 +2,53 @@ module Fields_mod
     use MyLattice
     implicit none
     
-    public :: SpinConf, conf_in, conf_out
+    public :: AuxConf, conf_in, conf_out
     private
     
-    type :: SpinConf
-        real(kind=8), dimension(:,:,:), public, allocatable :: phi
+    type :: AuxConf
+        real(kind=8), dimension(:,:,:), public, allocatable :: phi_list
     contains
-        procedure :: make => SpinConf_make
-        final :: SpinConf_clear
-        procedure :: m_bosonratio_local
-!        procedure :: m_bosonratio_global_time
-        procedure :: m_bosonratio_global_spacetime
-        generic :: bosonratio => m_bosonratio_local
-!        generic :: bosonratio => m_bosonratio_global_time
-        generic :: bosonratio => m_bosonratio_global_spacetime
-    end type SpinConf
+        procedure   :: make =>  AuxConf_make
+        final       ::          AuxConf_clear
+    end type AuxConf
 
 contains
-    subroutine SpinConf_make(this)
-        class(SpinConf), intent(inout) :: this
-        allocate(this%phi(Naux, Lq, Ltrot))
+    subroutine AuxConf_make(this)
+        class(AuxConf), intent(inout) :: this
+        allocate(this%phi_list(Naux, Ndim, Ltrot))
         return
-    end subroutine SpinConf_make
+    end subroutine AuxConf_make
     
-    subroutine SpinConf_clear(this)
-        type(SpinConf), intent(inout) :: this
-        deallocate(this%phi)
+    subroutine AuxConf_clear(this)
+        type(AuxConf), intent(inout) :: this
+        deallocate(this%phi_list)
         return
-    end subroutine SpinConf_clear
-    
-    real(kind=8) function m_bosonratio_local(this, phi_new, ii, ntau, Latt) result(ratio_boson)
-! Arguments: 
-        class(SpinConf), intent(in) :: this
-        real(kind=8), dimension(Naux, Lq, Ltrot), intent(in) :: phi_new
-        integer, intent(in) :: ii, ntau
-        class(kagomeLattice), intent(in) :: Latt
-! Local: 
-        real(kind=8) :: new1, old1, new2, old2, new3, old3, new4, old4, action_dif
-        real(kind=8) :: vec1(Naux), vec2(Naux)
-        integer :: jj, nf
-! phonon kinetics
-        vec1(:) = this%phi(:, ii, npbc(ntau+1, Ltrot)) - phi_new(:, ii, ntau)
-        vec2(:) = this%phi(:, ii, npbc(ntau-1, Ltrot)) - phi_new(:, ii, ntau)
-        vec1 = vec1 / Dtau
-        vec2 = vec2 / Dtau
-        new1 = sqr_vec(vec1) + sqr_vec(vec2)
-        vec1(:) = this%phi(:, ii, npbc(ntau+1, Ltrot)) - this%phi(:, ii, ntau)
-        vec2(:) = this%phi(:, ii, npbc(ntau-1, Ltrot)) - this%phi(:, ii, ntau)
-        vec1 = vec1 / Dtau
-        vec2 = vec2 / Dtau
-        old1 = sqr_vec(vec1) + sqr_vec(vec2)
-! phonon-phonon interactions
-        new2 = 0.d0; old2 = 0.d0
-        do nf = 1, 2*Nbond
-            jj = Latt%L_bonds(ii, nf)
-            vec1(:) = phi_new(:, ii, ntau) - this%phi(:, jj, ntau)
-            new2 = new2 + sqr_vec(vec1)
-            vec2(:) = this%phi(:, ii, ntau) - this%phi(:, jj, ntau)
-            old2 = old2 + sqr_vec(vec2)
-        enddo
-! phonon mass term and quartic terms
-        vec1(:) = phi_new(:, ii, ntau)
-        new3 = sqr_vec(vec1)
-        new4 = new3 * new3
-        vec2(:) = this%phi(:, ii, ntau)
-        old3 = sqr_vec(vec2)
-        old4 = old3 * old3
-        
-        action_dif = (new1 - old1) * Dtau/(2.0) + (new2 - old2) * (Dtau/2.0) &
-            &   + (new3 - old3) * (Dtau/2.0) + (new4 - old4) * (Dtau/4.0)
-        ratio_boson = exp(-action_dif)
-        return
-    end function m_bosonratio_local
-    
-!    real(kind=8) function m_bosonratio_global_time(this, phi_new, ii, Latt) result(ratio_boson)
-! Arguments: 
-!        class(SpinConf), intent(in) :: this
-!        real(kind=8), dimension(Naux, Lq, Ltrot), intent(in) :: phi_new
-!        integer, intent(in) :: ii
-!        class(kagomeLattice), intent(in) :: Latt
-! Local: 
-!        real(kind=8) :: new1, old1, new2, old2, new3, old3, new4, old4, action_dif, tmp
-!        integer :: nt, jj, nf
-!        real(kind=8) :: vec(Naux)
-        
-!        new1 = 0.d0; old1 = 0.d0
-!        new2 = 0.d0; old2 = 0.d0
-!        new3 = 0.d0; old3 = 0.d0
-!        new4 = 0.d0; old4 = 0.d0
-!        do nt = 1, Ltrot
-! phonon kinetics
-!            vec(:) = phi_new(:, ii, npbc(nt+1, Ltrot)) - phi_new(:, ii, nt)
-!            vec = vec/Dtau
-!            new1 = new1 + sqr_vec(vec)
-!            vec(:) = this%phi(:, ii, npbc(nt+1, Ltrot)) - this%phi(:, ii, nt)
-!            vec = vec/Dtau
-!            old1 = old1 + sqr_vec(vec)
-! phonon-phonon interactions
-!            do nf = 1, 2*Nbond
-!                jj = Latt%L_bonds(ii, nf)
-!                vec(:) = phi_new(:, ii, nt) - this%phi(:, jj, nt)
-!                new2 = new2 + sqr_vec(vec)
-!                vec(:) = this%phi(:, ii, nt) - this%phi(:, jj, nt)
-!                old2 = old2 + sqr_vec(vec)
-!            enddo
-! phonon mass term and quartic terms
-!            vec(:) = phi_new(:, ii, nt)
-!            tmp = sqr_vec(vec)
-!            new3 = new3 + tmp
-!            new4 = new4 + tmp * tmp
-!            vec(:) = this%phi(:, ii, nt)
-!            tmp = sqr_vec(vec)
-!            old3 = old3 + tmp
-!            old4 = old4 + tmp * tmp
-!        enddo
-!        action_dif = (new1 - old1) * Dtau/(2.0) + (new2 - old2) * (Dtau/2.0) &
-!            &   + (new3 - old3) * (Dtau/2.0) + (new4 - old4) * (Dtau/4.0)
-!        ratio_boson = exp(-action_dif)
-!        return
-!    end function m_bosonratio_global_time
-    
-! without phonon kinetics and mutual phonon interactions
-    real(kind=8) function m_bosonratio_global_spacetime(this, phi_new) result(ratio_boson)
-! Arguments: 
-        class(SpinConf), intent(in) :: this
-        real(kind=8), dimension(Naux, Lq, Ltrot), intent(in) :: phi_new
-! Local: 
-        real(kind=8) :: new3, old3, new4, old4, action_dif, tmp
-        integer :: nt, ii
-        real(kind=8) :: vec(Naux)
-        
-        new3 = 0.d0; old3 = 0.d0
-        new4 = 0.d0; old4 = 0.d0
-        do nt = 1, Ltrot
-            do ii = 1, Lq
-! phonon mass term and quartic terms
-                vec(:) = phi_new(:, ii, nt)
-                tmp = sqr_vec(vec)
-                new3 = new3 + tmp
-                new4 = new4 + tmp * tmp
-                vec(:) = this%phi(:, ii, nt)
-                tmp = sqr_vec(vec)
-                old3 = old3 + tmp
-                old4 = old4 + tmp * tmp
-            enddo
-        enddo
-        action_dif = (new3 - old3) * (Dtau/2.0) + (new4 - old4) * (Dtau/4.0)
-        ratio_boson = exp(-action_dif)
-        return
-    end function m_bosonratio_global_spacetime
+    end subroutine AuxConf_clear
     
     subroutine conf_in(Conf, iseed, Latt)
-        class(SpinConf), intent(inout) :: Conf
+        class(AuxConf), intent(inout) :: Conf
         integer, intent(out) :: iseed
         class(kagomeLattice), intent(in) :: Latt
 ! Local: 
-        real(kind=8), dimension(Naux, LqTherm, LtrotTherm) :: phi_therm
+        real(kind=8), dimension(Naux, NdimTherm, LtrotTherm) :: phi_list_therm
         
-        call conf_therm_in(phi_therm, iseed)
-        call conf_transfer(Conf%phi, phi_therm, Latt)
+        call conf_therm_in(phi_list_therm, iseed)
+        call conf_transfer(Conf%phi_list, phi_list_therm, Latt)
         return
     end subroutine conf_in
     
-    subroutine conf_therm_in(phi_therm, iseed)
+    subroutine conf_therm_in(phi_list_therm, iseed)
 !#define DEC
         include 'mpif.h'
 ! Arguments: 
-        real(kind=8), dimension(Naux, LqTherm, LtrotTherm), intent(inout) :: phi_therm
+        real(kind=8), dimension(Naux, NdimTherm, LtrotTherm), intent(inout) :: phi_list_therm
         integer, intent(out) :: iseed
 ! Local: 
         integer :: status(MPI_STATUS_SIZE)
         integer :: iseed0, itmp
         integer :: ii, ns, nt, N
         real(kind=8), external :: ranf
-        real(kind=8), dimension(Naux, LqTherm, LtrotTherm) :: phi_itmp
+        real(kind=8), dimension(Naux, NdimTherm, LtrotTherm) :: phi_list_itmp
         
         if (IRANK == 0 ) then
             open(unit=30, file='confin.txt', status='unknown')
@@ -189,41 +62,41 @@ contains
                 do N = 1, ISIZE - 1
 !   Setup node I and send data.
                     read(10,*) itmp ! read the following rows of "seeds" as the seeds for other nodes. Each node has only one seed to generate the space-time auxiliary fields
-                    call conf_set(phi_itmp, itmp)
+                    call conf_set(phi_list_itmp, itmp)
                     call MPI_SEND(itmp, 1, MPI_Integer, N, N, MPI_COMM_WORLD, IERR)
-					call MPI_SEND(phi_itmp, LqTherm*Naux*LtrotTherm, MPI_Real8, N, N+1024, MPI_COMM_WORLD, IERR)
+					call MPI_SEND(phi_list_itmp, NdimTherm*Naux*LtrotTherm, MPI_Real8, N, N+1024, MPI_COMM_WORLD, IERR)
                     print '("after sending message from master ", i3.1, " to Rank ", i3.1)', IRANK, N
                 enddo
 ! Set node zero.
                 iseed = iseed0
-                call conf_set(phi_therm, iseed)
+                call conf_set(phi_list_therm, iseed)
                 print '("initiating master rank ", i3.1)', IRANK
             else
 ! read all confins from NODE 0.
 ! Setup Node 0
                 do nt = 1, LtrotTherm
-                    do ii = 1, LqTherm
+                    do ii = 1, NdimTherm
                         do ns = 1, Naux
-                            read(30,*) phi_therm(ns, ii, nt)
+                            read(30,*) phi_list_therm(ns, ii, nt)
                         enddo
                     enddo
                 enddo
                 do N = 1, ISIZE - 1
                     read(30,*) itmp
                     do nt = 1, LtrotTherm
-                        do ii = 1, LqTherm
+                        do ii = 1, NdimTherm
                             do ns = 1, Naux
-                                read(30,*) phi_itmp(ns, ii, nt)
+                                read(30,*) phi_list_itmp(ns, ii, nt)
                             enddo
                         enddo
                     enddo
                     call MPI_SEND(itmp, 1, MPI_Integer, N, N, MPI_COMM_WORLD, IERR)
-					call MPI_SEND(phi_itmp, Naux*LqTherm*LtrotTherm, MPI_Real8, N, N+1024, MPI_COMM_WORLD, IERR)
+					call MPI_SEND(phi_list_itmp, Naux*NdimTherm*LtrotTherm, MPI_Real8, N, N+1024, MPI_COMM_WORLD, IERR)
                 enddo
             endif
         else
             call MPI_RECV(iseed, 1, MPI_Integer, 0, IRANK, MPI_COMM_WORLD, STATUS, IERR)
-			call MPI_RECV(phi_therm, Naux*LqTherm*LtrotTherm, MPI_Real8, 0, IRANK + 1024, MPI_COMM_WORLD, STATUS, IERR)
+			call MPI_RECV(phi_list_therm, Naux*NdimTherm*LtrotTherm, MPI_Real8, 0, IRANK + 1024, MPI_COMM_WORLD, STATUS, IERR)
             print '("Rank ", i3.1, " after receiving message. ")', IRANK
         endif
         if (IRANK == 0 ) then
@@ -232,8 +105,8 @@ contains
         return
     end subroutine conf_therm_in
 
-    subroutine conf_set(phi, itmp)
-        real(kind=8), dimension(Naux, LqTherm, LtrotTherm), intent(out) :: phi
+    subroutine conf_set(phi_list, itmp)
+        real(kind=8), dimension(Naux, NdimTherm, LtrotTherm), intent(out) :: phi_list
         integer, intent(inout) :: itmp
 ! Local: 
         integer :: ii, ns, nt
@@ -242,44 +115,54 @@ contains
         
         if (iniType == 1) then
             do nt = 1, LtrotTherm
-                do ii = 1, LqTherm
+                do ii = 1, NdimTherm
                     do ns = 1, Naux
                         X = ranf(itmp)
-                        phi(ns, ii, nt) = iniBias(ns) + iniAmpl * (X - 0.5)
+                        phi_list(ns, ii, nt) = iniBias(ns) + iniAmpl * (X - 0.5)
                     enddo
                 enddo
             enddo
         elseif (iniType == 2) then
             do nt = 1, LtrotTherm
-                do ii = 1, LqTherm
+                do ii = 1, NdimTherm
                     do ns = 1, Naux
                         X = rng_Gaussian(itmp)
-                        phi(ns, ii, nt) = iniBias(ns) + iniAmpl * X
+                        phi_list(ns, ii, nt) = iniBias(ns) + iniAmpl * X
                     enddo
                 enddo
             enddo
         elseif (iniType == 3) then
             do nt = 1, LtrotTherm
-                do ii = 1, LqTherm
+                do ii = 1, NdimTherm
                     do ns = 1, Naux
                         X = rng_Gaussian(itmp)
-                        phi(ns, ii, nt) = iniBias(ns) + iniAmpl * abs(X)
+                        phi_list(ns, ii, nt) = iniBias(ns) + iniAmpl * abs(X)
                     enddo
                 enddo
             enddo
         else
-            write(6,*) "incorrect absolute input", absolute, " on rank ", IRANK
+            write(6,*) "incorrect initype input", initype, " on rank ", IRANK
         endif
         return
     end subroutine conf_set
     
-    subroutine conf_transfer(phi, phi_therm, Latt)
-        real(kind=8), dimension(Naux, Lq, Ltrot), intent(inout) :: phi
-        real(kind=8), dimension(Naux, LqTherm, LtrotTherm), intent(in) :: phi_therm
+    subroutine conf_transfer(phi_list, phi_list_therm, Latt)
+        real(kind=8), dimension(Naux, Lq, Ltrot), intent(inout) :: phi_list
+        real(kind=8), dimension(Naux, NdimTherm, LtrotTherm), intent(in) :: phi_list_therm
         class(kagomeLattice), intent(in) :: Latt
-        integer :: nt, ntt, nx, ny, ii, iit, nc
+        integer :: nt, ntt, nx, ny, ii, iit, nc, no
         integer :: cell_list_therm(LqTherm, 1:2), inv_cell_list_therm(NlxTherm, NlyTherm)
-
+        integer :: dim_list_therm(NdimTherm, 1:2), inv_dim_list_therm(LqTherm, Norb)
+! set therm list
+        nc = 0
+        do no = 1, Norb
+            do n = 1, LqTherm
+                nc = nc + 1
+                dim_list(nc, 1) = n
+                dim_list(nc, 2) = no
+                inv_dim_list(n, no) = nc
+            enddo
+        enddo
         nc = 0
         do ny = 1, NlyTherm
             do nx = 1, NlxTherm
@@ -289,50 +172,56 @@ contains
                 inv_cell_list_therm(nx, ny) = nc
             enddo
         enddo
-! copy NsigL_K
-        do nt = 1, LtrotTherm
-            do ny = 1, NlyTherm
-                do nx = 1, NlxTherm
-                    iit = inv_cell_list_therm(nx, ny)
-                    ii = Latt%inv_cell_list(nx, ny)
-                    phi(:, ii, nt) = phi_therm(:, iit, nt)
+! copy Conf
+        do no = 1, Norb
+            do nt = 1, LtrotTherm
+                do ny = 1, NlyTherm
+                    do nx = 1, NlxTherm
+                        iit = inv_dim_list_therm(inv_cell_list_therm(nx, ny), no)
+                        ii  = Latt%inv_dim_list(  Latt%inv_cell_list(nx, ny), no)
+                        phi_list(:, ii, nt) = phi_list_therm(:, iit, nt)
+                    enddo
                 enddo
             enddo
         enddo
-        do nt = 1, LtrotTherm
-            do ny = 1, NlyTherm
-                do nx = NlxTherm+1, Nlx
-                    iit = inv_cell_list_therm(nx - NlxTherm, ny)
-                    ii = Latt%inv_cell_list(nx, ny)
-                    phi(:, ii, nt) = phi_therm(:, iit, nt)
+        do no = 1, Norb
+            do nt = 1, LtrotTherm
+                do ny = 1, NlyTherm
+                    do nx = NlxTherm+1, Nlx
+                        iit = inv_dim_list_therm(inv_cell_list_therm(nx - NlxTherm, ny), no)
+                        ii  = Latt%inv_dim_list(  Latt%inv_cell_list(nx, ny), no)
+                        phi_list(:, ii, nt) = phi_list_therm(:, iit, nt)
+                    enddo
                 enddo
             enddo
         enddo
-        do nt = 1, LtrotTherm
-            do ny = NlyTherm+1, Nly
-                do nx = 1, NlxTherm
-                    iit = inv_cell_list_therm(nx, ny - NlyTherm)
-                    ii = Latt%inv_cell_list(nx, ny)
-                    phi(:, ii, nt) = phi_therm(:, iit, nt)
+        do no = 1, Norb
+            do nt = 1, LtrotTherm
+                do ny = NlyTherm+1, Nly
+                    do nx = 1, NlxTherm
+                        iit = inv_dim_list_therm(inv_cell_list_therm(nx, ny - NlyTherm), no)
+                        ii  = Latt%inv_dim_list(  Latt%inv_cell_list(nx, ny), no)
+                        phi_list(:, ii, nt) = phi_list_therm(:, iit, nt)
+                    enddo
                 enddo
             enddo
         enddo
-        do nt = 1, LtrotTherm
-            do ny = NlyTherm+1, Nly
-                do nx = NlxTherm+1, Nlx
-                    iit = inv_cell_list_therm(nx - NlxTherm, ny - NlyTherm)
-                    ii = Latt%inv_cell_list(nx, ny)
-                    phi(:, ii, nt) = phi_therm(:, iit, nt)
+        do no = 1, Norb
+            do nt = 1, LtrotTherm
+                do ny = NlyTherm+1, Nly
+                    do nx = NlxTherm+1, Nlx
+                        iit = inv_dim_list_therm(inv_cell_list_therm(nx - NlxTherm, ny - NlyTherm), no)
+                        ii  = Latt%inv_dim_list(  Latt%inv_cell_list(nx, ny), no)
+                        phi_list(:, ii, nt) = phi_list_therm(:, iit, nt)
+                    enddo
                 enddo
             enddo
         enddo
-        do nt = LtrotTherm+1, Ltrot
-            do ny = 1, Nly
-                do nx = 1, Nlx
-                    ii = Latt%inv_cell_list(nx, ny)
-                    ntt = nt - LtrotTherm
-                    phi(:, ii, nt) = phi(:, ii, ntt)
-                enddo
+        do ii = 1, Ndim
+            do nt = LtrotTherm+1, Ltrot
+                ii  = Latt%inv_cell_list(nx, ny)
+                ntt = nt - LtrotTherm
+                phi_list(:, ii, nt) = phi_list(:, ii, ntt)
             enddo
         enddo
         return
@@ -342,7 +231,7 @@ contains
 !#define DEC
         include 'mpif.h'
 ! Arguments: 
-        class(SpinConf), intent(in) :: Conf
+        class(AuxConf), intent(in) :: Conf
         integer, intent(in) :: iseed
 ! Local:
         integer :: ii, ns, nt, N
@@ -351,27 +240,27 @@ contains
         if (IRANK == 0) open(unit=35, file='confout.txt', status='unknown')
         if (IRANK .NE. 0) then
             call MPI_SEND(iseed, 1, MPI_Integer, 0, IRANK, MPI_COMM_WORLD, IERR)
-			call MPI_SEND(Conf%phi, Lq*Naux*Ltrot, MPI_Real8, 0, IRANK+1024, MPI_COMM_WORLD, IERR)
+			call MPI_SEND(Conf%phi_list, Ndim*Naux*Ltrot, MPI_Real8, 0, IRANK+1024, MPI_COMM_WORLD, IERR)
             print '("Rank", i3.1, " after sending message. ")', IRANK
         endif
         if (IRANK == 0) then
             write(35,*) iseed
             do nt = 1, Ltrot
-                do ii = 1, Lq
+                do ii = 1, Ndim
                     do ns = 1, Naux
-                        write(35,*) Conf%phi(ns, ii, nt)
+                        write(35,*) Conf%phi_list(ns, ii, nt)
                     enddo
                 enddo
             enddo
             print '("Rank ", i3.1, " after writing down own auxfields. ")', IRANK
             do N = 1, ISIZE - 1
                 call MPI_RECV(iseed, 1, MPI_Integer, N, N, MPI_COMM_WORLD, STATUS, IERR)
-				call MPI_RECV(Conf%phi, Lq*Naux*Ltrot, MPI_Real8, N, N+1024, MPI_COMM_WORLD, STATUS, IERR)
+				call MPI_RECV(Conf%phi_list, Ndim*Naux*Ltrot, MPI_Real8, N, N+1024, MPI_COMM_WORLD, STATUS, IERR)
                 write(35,*) iseed
                 do nt = 1, Ltrot
-                    do ii = 1, Lq
+                    do ii = 1, Ndim
                         do ns = 1, Naux
-                            write(35,*) Conf%phi(ns, ii, nt)
+                            write(35,*) Conf%phi_list(ns, ii, nt)
                         enddo
                     enddo
                 enddo

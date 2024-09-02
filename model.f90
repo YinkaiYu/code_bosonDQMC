@@ -5,10 +5,10 @@ module DQMC_Model_mod
     implicit none
     
     public
-    type(kagomeLattice), allocatable :: Latt
-    type(SpinConf), allocatable :: NsigL_K
-    type(OperatorKinetic), allocatable :: Op_T
-    type(OperatorHubbard) :: Op_U
+    type(kagomeLattice), allocatable    :: Latt
+    type(OperatorKinetic), allocatable  :: Op_T
+    type(OperatorHubbard)               :: Op_U1,   Op_U2
+    type(AuxConf), allocatable          :: Conf
     
 contains
     subroutine Model_init(iseed)
@@ -21,23 +21,23 @@ contains
         allocate(Latt)
         call Lattice_make(Latt)
 ! initiate phonon and auxiliary field configuration
-        allocate(NsigL_K)
-        call NsigL_K%make()
-        call conf_in(NsigL_K, iseed, Latt)
+        allocate(Conf)
+        call Conf%make()
+        call conf_in(Conf, iseed, Latt)
 ! set non-interacting exponential operator
         allocate(Op_T)
         call Op_T%make()
         call Op_T%set(Latt)
 ! set el-ph coupling exponential
-        call Op_U%set()
+        call Op_U1%set()
         return
     end subroutine Model_init
     
     subroutine Model_clear(iseed)
         integer, intent(in) :: iseed
-        call conf_out(NsigL_K, iseed)
+        call conf_out(Conf, iseed)
         deallocate(Op_T)
-        deallocate(NsigL_K)
+        deallocate(Conf)
         deallocate(Latt)
         return
     end subroutine Model_clear

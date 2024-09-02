@@ -12,7 +12,7 @@ module CalcBasic ! Global parameters
     integer,                parameter           :: Naux  = 2  ! flavor number of auxiliary field, respectively for U1 term and U2 term
     integer,                public              :: Nlx, Nly, NlxTherm, NlyTherm
     integer,                public              :: Lq, LqTherm
-    integer,                public              :: Ndim
+    integer,                public              :: Ndim, NdimTherm
     real(kind=8),           public              :: Dtau
     real(kind=8),           public              :: Beta
     integer,                public              :: Ltrot, LtrotTherm
@@ -89,6 +89,7 @@ contains
         LqTherm = NlxTherm * NlyTherm
         Dtau = Beta / dble(Ltrot)
         Ndim = Lq * Norb
+        NdimTherm = LqTherm * Norb
         if (mod(Ltrot, Nwrap) == 0) then
             Nst = Ltrot / Nwrap
         else

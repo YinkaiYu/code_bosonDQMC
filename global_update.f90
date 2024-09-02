@@ -98,7 +98,7 @@ contains
 ! as a part of the cluster, it is now flipped
                 ii = Latt%dimt_list(iit, 1)
                 nti = Latt%dimt_list(iit, 2)
-                vec_old(:) = NsigL_K%phi(:, ii, nti)
+                vec_old(:) = Conf%phi_list(:, ii, nti)
                 vec_new = spin_reflect(vec_old, theta)
                 phi_new(:, ii, nti) = vec_new(:) ! output
 ! approach the adjacent sites if unmarked, and add them into the stack with probability.
@@ -109,7 +109,7 @@ contains
                         eff_bond = eff_bond + 1
                         jj = Latt%dimt_list(jjt, 1)
                         ntj = Latt%dimt_list(jjt, 2)
-                        vec_j(:) = NsigL_K%phi(:, jj, ntj)
+                        vec_j(:) = Conf%phi_list(:, jj, ntj)
                         if (nf .le. 2*Nbond) then ! space-adjacent
                             dif = action_dif(vec_new, vec_old, vec_j, .true.)
                             ratio = exp(-dif)
@@ -195,7 +195,7 @@ contains
         class(GlobalUpdate), intent(inout) :: this
         class(Propagator), intent(in) :: Prop
         class(WrapList), intent(in) :: WrList
-        phi_new = NsigL_K%phi
+        phi_new = Conf%phi_list
         call this%prop%asgn(Prop)
         call this%wrlist%asgn(WrList)
         call Acc_Kg%reset()
@@ -241,18 +241,18 @@ contains
             if (U1 > Zero) call GlobalK_prop_L(this%prop, ratio_fermion, phi_new, nt)
         enddo
         call Wrap_L(this%prop, this%wrlist, 0)
-        ratio_boson = NsigL_K%bosonratio(phi_new)
+        ratio_boson = Conf%bosonratio(phi_new)
         ratio_re = ratio_fermion * ratio_boson
         random = ranf(iseed)
         if (ratio_re .ge. random) then
             call Acc_Kg%count(.true.)
-            NsigL_K%phi = phi_new
+            Conf%phi_list = phi_new
             call Prop%asgn(this%prop)
             call WrList%asgn(this%wrlist)
             is_beta = .false.
         else
             call Acc_Kg%count(.false.)
-            phi_new = NsigL_K%phi
+            phi_new = Conf%phi_list
             call this%prop%asgn(Prop)
             call this%wrlist%asgn(WrList)
             is_beta = .true. 
@@ -280,18 +280,18 @@ contains
             call propT_R(this%prop)
             if (mod(nt, Nwrap) == 0) call Wrap_R(this%prop, this%wrlist, nt)
         enddo
-        ratio_boson = NsigL_K%bosonratio(phi_new)
+        ratio_boson = Conf%bosonratio(phi_new)
         ratio_re = ratio_fermion * ratio_boson
         random = ranf(iseed)
         if (ratio_re .ge. random) then
             call Acc_Kg%count(.true.)
-            NsigL_K%phi = phi_new
+            Conf%phi_list = phi_new
             call Prop%asgn(this%prop)
             call WrList%asgn(this%wrlist)
             is_beta = .true.
         else
             call Acc_Kg%count(.false.)
-            phi_new = NsigL_K%phi
+            phi_new = Conf%phi_list
             call this%prop%asgn(Prop)
             call this%wrlist%asgn(WrList)
             is_beta = .false. 
