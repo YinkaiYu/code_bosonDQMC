@@ -1,14 +1,14 @@
 module DQMC_Model_mod
     use NonInteract
     use Fields_mod
-    use OperatorK_mod
+    use OperatorHubbard_mod
     implicit none
     
     public
     type(kagomeLattice), allocatable :: Latt
     type(SpinConf), allocatable :: NsigL_K
     type(OperatorKinetic), allocatable :: Op_T
-    type(OperatorPhonon) :: Op_K
+    type(OperatorHubbard) :: Op_U
     
 contains
     subroutine Model_init(iseed)
@@ -29,7 +29,7 @@ contains
         call Op_T%make()
         call Op_T%set(Latt)
 ! set el-ph coupling exponential
-        call Op_K%set()
+        call Op_U%set()
         return
     end subroutine Model_init
     

@@ -1,64 +1,61 @@
-module OperatorK_mod
+module OperatorHubbard_mod
     use MyLattice
     implicit none
     public
     
-    type :: OperatorPhonon
-        real(kind=8), private :: alpha ! = Dtau*phg
-        real(kind=8), private :: entryC
-        complex(kind=8), private :: entryS
-        
-        complex(kind=8), public :: Delta(2,2)
+    type :: OperatorHubbard
+        complex(kind=8), private :: alpha ! = sqrt(-2UΔτ)
+        complex(kind=8), private :: gaussian
+        complex(kind=8), private :: expalpha
+
+        complex(kind=8), public :: Delta
+        complex(kind=8), public :: ratio_gaussian
     contains
-        procedure :: set => opK_set
-        procedure, private :: get_exp => opK_get_exp
-        procedure :: get_delta => opK_get_delta
-        procedure :: mmult_R => opK_mmult_R
-        procedure :: mmult_L => opK_mmult_L
-    end type OperatorPhonon
+        procedure           :: set          => opK_set
+        procedure, private  :: get_exp      => opK_get_exp
+        procedure           :: get_delta    => opK_get_delta
+        procedure           :: mmult_R      => opK_mmult_R
+        procedure           :: mmult_L      => opK_mmult_L
+    end type OperatorHubbard
     
 contains
-    subroutine opK_set(this)
-        class(OperatorPhonon), intent(inout) :: this
-        this%alpha = Dtau * U1
+    subroutine opK_set(this, RU)
+        class(OperatorHubbard), intent(inout) :: this
+        real(kind=8), intent(in) :: RU
+        this%alpha = dcmplx( 0.d0, 0.d0 )
+        if ( RU < -Zero ) this%alpha = dcmplx( sqrt(-2.d0 * RU * Dtau), 0.d0 )
+        if ( RU >  Zero ) this%alpha = dcmplx( 0.d0, sqrt( 2.d0 * RU * Dtau) )
         return
     end subroutine opK_set
     
-    subroutine opK_get_exp(this, vec, nflag)
-        class(OperatorPhonon), intent(inout) :: this
+    subroutine opK_get_exp(this, phi, nflag)
+        class(OperatorHubbard), intent(inout) :: this
         integer, intent(in) :: nflag ! +1 or -1; propagating direction
-        real(kind=8), dimension(Naux), intent(in) :: vec ! two-component order parameter with space-time coordinate (ii, ntau)
-        real(kind=8) :: magnitude
-        magnitude = sqrt(sqr_vec(vec))
-        this%entryC = cosh( nflag * this%alpha * magnitude )
-        this%entryS = sinh( nflag * this%alpha * magnitude ) * dcmplx(-vec(1), vec(2)) / magnitude
+        real(kind=8), intent(in) :: phi ! space time local auxiliary field value, for phi_1 or phi_2
+        this%gaussian = dcmplx( exp(-0.5d0 * phi * phi), 0.d0 )
+        this%expalpha = exp( this%alpha * phi * nflag )
         return
     end subroutine opK_get_exp
     
-    subroutine opK_get_delta(this, vec_old, vec_new, sign)
-        class(OperatorPhonon), intent(inout) :: this
-        real(kind=8), dimension(Naux), intent(in) :: vec_old, vec_new
-        integer, intent(in) :: sign ! = \pm 1
-        real(kind=8) :: C_new, C_old, mag_new, mag_old
-        complex(kind=8) :: S_new, S_old
-        
-        mag_new = sqrt(sqr_vec(vec_new))
-        C_new = cosh( this%alpha * mag_new )
-        S_new = sinh( this%alpha * mag_new ) * dcmplx(- vec_new(1), vec_new(2)) / mag_new
-        mag_old = sqrt(sqr_vec(vec_old))
-        C_old = cosh( this%alpha * mag_old )
-        S_old = sinh( -this%alpha * mag_old ) * dcmplx(- vec_old(1), vec_old(2)) / mag_old
-        this%Delta(1,1) = C_new * C_old + S_new * dconjg(S_old) - 1.d0
-        this%Delta(1,2) = (C_new * S_old + S_new * C_old) * dble(sign)
-        this%Delta(2,1) = (C_new * dconjg(S_old) + dconjg(S_new) * C_old) * dble(sign)
-        this%Delta(2,2) = C_new * C_old + dconjg(S_new) * S_old - 1.d0
+    subroutine opK_get_delta(this, phi_old, phi_new)
+        class(OperatorHubbard), intent(inout) :: this
+        real(kind=8), intent(in) :: phi_old, phi_new
+        complex(kind=8) :: gaussian_old, gaussian_new
+        complex(kind=8) :: expalpha_old, expalpha_new
+        call this%get_exp(phi_old, 1)
+        gaussian_old = this%gaussian
+        expalpha_old = this%expalpha
+        call this%get_exp(phi_new, 1)
+        gaussian_new = this%gaussian
+        expalpha_new = this%expalpha
+        this%ratio_gaussian = gaussian_new / gaussian_old
+        this%Delta          = expalpha_new / expalpha_old - dcmplx(1.d0,0.d0)
         return
     end subroutine opK_get_delta
     
     subroutine opK_mmult_R(this, Mat, Latt, phi, ntau, nflag)
-! In Mat Out U(NF) * EXP(D(NF)) * Mat
 ! Arguments: 
-        class(OperatorPhonon), intent(inout) :: this
+        class(OperatorHubbard), intent(inout) :: this
         complex(kind=8), dimension(Ndim, Ndim), intent(inout) :: Mat
         class(kagomeLattice), intent(in) :: Latt
         real(kind=8), dimension(Naux, Lq, Ltrot), intent(in) :: phi
@@ -91,7 +88,7 @@ contains
     subroutine opK_mmult_L(this, Mat, Latt, phi, ntau, nflag) 
 ! In Mat Out Mat* EXP(D(NF)) * UT(NF)
 ! Arguments:
-        class(OperatorPhonon), intent(inout) :: this
+        class(OperatorHubbard), intent(inout) :: this
         complex(kind=8), dimension(Ndim, Ndim), intent(inout) :: Mat
         class(kagomeLattice), intent(in) :: Latt
         real(kind=8), dimension(Naux, Lq, Ltrot), intent(in) :: phi
@@ -120,4 +117,4 @@ contains
         enddo
         return
     end subroutine opK_mmult_L
-end module OperatorK_mod
+end module OperatorHubbard_mod

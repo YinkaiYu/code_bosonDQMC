@@ -29,14 +29,14 @@ contains
                 P(no) = Latt%inv_dim_list(ii, no)
             enddo
             sign = 1
-            call Op_K%get_delta(vec_old, vec_new, sign)
+            call Op_U%get_delta(vec_old, vec_new, sign)
             Prod =  dcmplx(0.d0, 0.d0)
             do nr = 1, Norb
                 do nl = 1, Norb
                     Gr_local(nl, nr) = ZKRON(nl, nr) - Gr(P(nl), P(nr))
                 enddo
             enddo
-            call mmult(mat_tmp, Op_K%Delta, Gr_local) ! 2*2 matrix multiplication
+            call mmult(mat_tmp, Op_U%Delta, Gr_local) ! 2*2 matrix multiplication
             do nr = 1, Norb
                 do nl = 1, Norb
                     Prod(nl, nr) = ZKRON(nl, nr) + mat_tmp(nl, nr)
@@ -56,10 +56,10 @@ contains
             do no = 1, Norb
                 Uhlp(:, no) = Gr(:, P(no))
                 do j = 1, Ndim
-                    Vhlp(no, j) = - Op_K%Delta(no, 1) * Gr(P(1), j) - Op_K%Delta(no, 2) * Gr(P(2), j)
+                    Vhlp(no, j) = - Op_U%Delta(no, 1) * Gr(P(1), j) - Op_U%Delta(no, 2) * Gr(P(2), j)
                 enddo
-                Vhlp(no, P(1)) = Vhlp(no, P(1)) + Op_K%Delta(no, 1)
-                Vhlp(no, P(2)) = Vhlp(no, P(2)) + Op_K%Delta(no, 2)
+                Vhlp(no, P(1)) = Vhlp(no, P(1)) + Op_U%Delta(no, 1)
+                Vhlp(no, P(2)) = Vhlp(no, P(2)) + Op_U%Delta(no, 2)
             enddo
             call mmult(temp, Uhlp, Prodinv)
             call mmult(Diff, temp, Vhlp)
@@ -79,9 +79,9 @@ contains
         do ii = Lq, 1, -1
             ratio_fermion = ratio_fermion * ratioK_fermion(Prop%Gr, phi_new, ii, nt)
         enddo
-        call Op_K%mmult_L(Prop%Gr, Latt, phi_new, nt, 1)
-        call Op_K%mmult_R(Prop%Gr, Latt, phi_new, nt, -1)
-        call Op_K%mmult_L(Prop%UUL, Latt, phi_new, nt, 1)
+        call Op_U%mmult_L(Prop%Gr, Latt, phi_new, nt, 1)
+        call Op_U%mmult_R(Prop%Gr, Latt, phi_new, nt, -1)
+        call Op_U%mmult_L(Prop%UUL, Latt, phi_new, nt, 1)
         return
     end subroutine GlobalK_prop_L
     
@@ -91,12 +91,12 @@ contains
         real(kind=8), dimension(Naux, Lq, Ltrot), intent(in) :: phi_new
         integer, intent(in) :: nt
         integer :: ii
-        call Op_K%mmult_R(Prop%Gr, Latt, NsigL_K%phi, nt, 1)
-        call Op_K%mmult_L(Prop%Gr, Latt, NsigL_K%phi, nt, -1)
+        call Op_U%mmult_R(Prop%Gr, Latt, NsigL_K%phi, nt, 1)
+        call Op_U%mmult_L(Prop%Gr, Latt, NsigL_K%phi, nt, -1)
         do ii = 1, Lq
             ratio_fermion = ratio_fermion * ratioK_fermion(Prop%Gr, phi_new, ii, nt)
         enddo
-        call Op_K%mmult_R(Prop%UUR, Latt, phi_new, nt, 1)
+        call Op_U%mmult_R(Prop%UUR, Latt, phi_new, nt, 1)
         return
     end subroutine GlobalK_prop_R
 end module GlobalK_mod
