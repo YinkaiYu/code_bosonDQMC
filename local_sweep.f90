@@ -1,6 +1,6 @@
 module LocalSweep_mod
     use Dynamics_mod
-    use LocalK_mod
+    use LocalU_mod
     use ObserEqual_mod
     implicit none
     
@@ -35,14 +35,14 @@ contains
             call Obs_tau%make()
             call Dyn%init()
         endif
-        call LocalK_init()
+        call LocalU_init()
         return
     end subroutine Local_sweep_init
     
     subroutine Local_sweep_clear(this)
         class(LocalSweep), intent(inout) :: this
         deallocate(Obs_equal)
-        call LocalK_clear()
+        call LocalU_clear()
         if (is_tau) then
             deallocate(Obs_tau)
             call Dyn%clear()
@@ -52,7 +52,7 @@ contains
     
     subroutine Local_sweep_reset(toggle)
         logical, intent(in) :: toggle
-        call LocalK_reset()
+        call LocalU_reset()
         call Obs_equal%reset()
         if (toggle) call Obs_tau%reset()
         return
@@ -65,7 +65,7 @@ contains
         call this%reset(.false.)
         do nt = 1, Ltrot
             do ii = 1, Lq
-                call LocalK_therm(ii, nt, iseed)
+                call LocalU_therm(ii, nt, iseed)
             enddo
         enddo
         call Acc_U_therm%ratio()
@@ -97,7 +97,7 @@ contains
             call Obs_equal%calc(Prop, nt)
             Nobs = Nobs + 1
             call propT_L(Prop)
-            if (U1 > Zero) call LocalK_prop_L(Prop, iseed, nt)
+            if (U1 > Zero) call LocalU_prop_L(Prop, iseed, nt)
         enddo
         call Wrap_L(Prop, WrList, 0, "S")
         return
@@ -116,7 +116,7 @@ contains
         endif
         call Wrap_R(Prop, WrList, 0, "S")
         do nt = 1, Ltrot
-            if (U1 > Zero) call LocalK_prop_R(Prop, iseed, nt)
+            if (U1 > Zero) call LocalU_prop_R(Prop, iseed, nt)
             call propT_R(Prop)
             if (mod(nt, Nwrap) == 0) call Wrap_R(Prop, WrList, nt, "S")
             call Obs_equal%calc(Prop, nt)
