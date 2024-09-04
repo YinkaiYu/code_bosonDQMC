@@ -3,25 +3,28 @@ module LocalU_mod
     implicit none
     
     public
-    private :: LocalU_metro, phi_new
+    private :: LocalU_metro, LocalU_metro_therm, phi_new
     
-    type(AccCounter) :: Acc_U_local, Acc_U_therm
+    
     real(kind=8) :: phi_new
     
 contains
-    subroutine LocalU_init()
-        call Acc_U_local%init()
-        call Acc_U_therm%init()
+    subroutine LocalU_init(Op_U)
+        type(OperatorHubbard), intent(inout) :: Op_U
+        call Op_U%Acc_U_local%init()
+        call Op_U%Acc_U_therm%init()
         return
     end subroutine LocalU_init
     
-    subroutine LocalU_clear()
+    subroutine LocalU_clear(Op_U)
+        type(OperatorHubbard), intent(inout) :: Op_U
         return
     end subroutine LocalU_clear
     
-    subroutine LocalU_reset()
-        call Acc_U_local%reset()
-        call Acc_U_therm%reset()
+    subroutine LocalU_reset(Op_U)
+        type(OperatorHubbard), intent(inout) :: Op_U
+        call Op_U%Acc_U_local%reset()
+        call Op_U%Acc_U_therm%reset()
         return
     end subroutine LocalU_reset
     
@@ -54,13 +57,13 @@ contains
 ! Upgrade Green's function and phi
         random = ranf(iseed)
         if (ratio_abs .gt. random) then
-            call Acc_U_local%count(.true.)
+            call Op_U%Acc_U_local%count(.true.)
             ! Gr(1:Ndim,1:Ndim) = Gr(1:Ndim,1:Ndim) - Gr(1:Ndim,ii) * ratio_det * Op_U%Delta * Gr(ii,1:Ndim)
             call ZGEMM('N', 'N', Ndim, Ndim, 1, -ratio_det * Op_U%Delta, &
                     & Gr(1:Ndim, ii), Ndim, Gr(ii, 1:Ndim), 1, 1.0d0, Gr, Ndim)
             Conf%phi_list(nf, ii, ntau) = phi_new
         else
-            call Acc_U_local%count(.false.)
+            call Op_U%Acc_U_local%count(.false.)
         endif
         return
     end subroutine LocalU_metro
@@ -101,7 +104,7 @@ contains
         return
     end subroutine LocalU_prop_R
     
-    subroutine LocalU_therm(Op_U, nf, ii, ntau, iseed)
+    subroutine LocalU_metro_therm(Op_U, nf, ii, ntau, iseed)
 ! Arguments: 
         type(OperatorHubbard), intent(inout) :: Op_U
         integer, intent(inout) :: iseed
@@ -125,11 +128,22 @@ contains
 ! Upgrade phi
         random = ranf(iseed)
         if (ratio_abs .gt. random) then
-            call Acc_U_local%count(.true.)
+            call Op_U%Acc_U_therm%count(.true.)
             Conf%phi_list(nf, ii, ntau) = phi_new
         else
-            call Acc_U_local%count(.false.)
+            call Op_U%Acc_U_therm%count(.false.)
         endif
         return
-    end subroutine LocalU_therm
+    end subroutine LocalU_metro_therm
+    
+    subroutine LocalU_prop_therm(Op_U, iseed, nf, ntau)
+        type(OperatorHubbard), intent(inout) :: Op_U
+        integer, intent(inout) :: iseed
+        integer, intent(in) :: ntau, nf
+        integer :: ii
+        do ii = 1, Ndim
+            call LocalU_metro_therm(Op_U, nf, ii, ntau, iseed)
+        enddo
+        return
+    end subroutine LocalU_prop_therm
 end module LocalU_mod

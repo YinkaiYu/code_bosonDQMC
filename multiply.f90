@@ -4,15 +4,17 @@ module Multiply_mod
     implicit none
     
 contains
-    subroutine propK_pre(Prop, phi, nt)
+    subroutine propU_pre(Op_U, Prop, nf, nt)
+        type(OperatorHubbard), intent(inout) :: Op_U
         class(Propagator), intent(inout) :: Prop
-        real(kind=8), dimension(Naux, Lq, Ltrot), intent(in) :: phi
-        integer, intent(in) :: nt
-        call Op_U1%mmult_R(Prop%UUR, Latt, phi, nt, 1)
+        integer, intent(in) :: nt, nf
+        do ii = 1, Ndim
+            call Op_U%mmult_R(Prop%UUR, Latt, Conf%phi_list(nf, ii, nt), ii, 1)
+        enddo
         return
-    end subroutine propK_pre
+    end subroutine propU_pre
     
-    subroutine propK_L(Prop, phi, nt)
+    subroutine propU_L(Prop, phi, nt)
         class(Propagator), intent(inout) :: Prop
         real(kind=8), dimension(Naux, Lq, Ltrot), intent(in) :: phi
         integer, intent(in) :: nt
@@ -20,9 +22,9 @@ contains
         call Op_U1%mmult_R(Prop%Gr, Latt, phi, nt, -1)
         call Op_U1%mmult_L(Prop%UUL, Latt, phi, nt, 1)
         return
-    end subroutine propK_L
+    end subroutine propU_L
     
-    subroutine propK_R(Prop, phi, nt)
+    subroutine propU_R(Prop, phi, nt)
         class(Propagator), intent(inout) :: Prop
         real(kind=8), dimension(Naux, Lq, Ltrot), intent(in) :: phi
         integer, intent(in) :: nt
@@ -30,9 +32,9 @@ contains
         call Op_U1%mmult_L(Prop%Gr, Latt, phi, nt, -1)
         call Op_U1%mmult_R(Prop%UUR, Latt, phi, nt, 1)
         return
-    end subroutine propK_R
+    end subroutine propU_R
     
-    subroutine propgrK_R(Prop, Propgr, phi, nt)
+    subroutine propgrU_R(Prop, Propgr, phi, nt)
         class(Propagator), intent(inout) :: Prop
         class(PropGreen), intent(inout) :: Propgr
         real(kind=8), dimension(Naux, Lq, Ltrot), intent(in) :: phi
@@ -43,7 +45,7 @@ contains
         call Op_U1%mmult_L(Propgr%Grtt, Latt, phi, nt, -1)
         call Op_U1%mmult_R(Prop%UUR, Latt, phi, nt, 1)
         return
-    end subroutine propgrK_R
+    end subroutine propgrU_R
     
     subroutine propT_pre(Prop)
         class(Propagator), intent(inout) :: Prop

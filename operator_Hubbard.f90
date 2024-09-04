@@ -3,6 +3,16 @@ module OperatorHubbard_mod
     implicit none
     public
     
+    type :: AccCounter
+        real(kind=8), private :: NC_eff_up, ACC_eff_up
+        real(kind=8), public :: acc
+    contains
+        procedure :: init => Acc_init
+        procedure :: reset => Acc_reset
+        procedure :: count => Acc_count
+        procedure :: ratio => Acc_calc_ratio
+    end type AccCounter
+    
     type :: OperatorHubbard
         complex(kind=8), private :: alpha ! = sqrt(-2UΔτ)
         complex(kind=8), private :: gaussian
@@ -10,6 +20,7 @@ module OperatorHubbard_mod
 
         complex(kind=8), public :: Delta
         complex(kind=8), public :: ratio_gaussian
+        type(AccCounter), public :: Acc_U_local, Acc_U_therm
     contains
         procedure           :: set          => opU_set
         procedure, private  :: get_exp      => opU_get_exp
@@ -86,4 +97,31 @@ contains
         enddo
         return
     end subroutine opU_mmult_L
+    
+    subroutine Acc_init(this)
+        class(AccCounter), intent(inout) :: this
+        this%acc = 0.d0
+        return
+    end subroutine Acc_init
+    
+    subroutine Acc_reset(this)
+        class(AccCounter), intent(inout) :: this
+        this%NC_eff_up = 0.d0
+        this%ACC_eff_up = 0.d0
+        return
+    end subroutine Acc_reset
+    
+    subroutine Acc_count(this, toggle)
+        class(AccCounter), intent(inout) :: this
+        logical, intent(in) :: toggle
+        this%NC_eff_up = this%NC_eff_up + 1
+        if (toggle) this%ACC_eff_up = this%ACC_eff_up + 1
+        return
+    end subroutine Acc_count
+    
+    subroutine Acc_calc_ratio(this)
+        class(AccCounter), intent(inout) :: this
+        this%acc = this%acc + this%ACC_eff_up / this%NC_eff_up
+        return
+    end subroutine Acc_calc_ratio
 end module OperatorHubbard_mod

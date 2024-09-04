@@ -47,7 +47,7 @@ contains
         integer :: nt
         do nt = 1, Ltrot
             call Obs%calc(PropGr, nt)
-            if (U1 > Zero) call propgrK_R(Prop_d, PropGr, Conf%phi_list, nt)
+            if (U1 > Zero) call propgrU_R(Prop_d, PropGr, Conf%phi_list, nt)
             call propgrT_R(Prop_d, PropGr)
             if (mod(nt, Nwrap) == 0) call Wrap_tau(Prop_d, PropGr, WrList, nt)
         enddo
