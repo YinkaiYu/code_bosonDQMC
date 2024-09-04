@@ -20,7 +20,7 @@ contains
 ! initiate lattice lists
         allocate(Latt)
         call Lattice_make(Latt)
-! initiate phonon and auxiliary field configuration
+! initiate auxiliary field configuration
         allocate(Conf)
         call Conf%make()
         call conf_in(Conf, iseed, Latt)
@@ -28,8 +28,9 @@ contains
         allocate(Op_T)
         call Op_T%make()
         call Op_T%set(Latt)
-! set el-ph coupling exponential
+! set H-S exponential
         call Op_U1%set()
+        call Op_U2%set()
         return
     end subroutine Model_init
     

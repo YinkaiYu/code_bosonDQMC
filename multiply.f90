@@ -14,36 +14,51 @@ contains
         return
     end subroutine propU_pre
     
-    subroutine propU_L(Prop, phi, nt)
+    subroutine propU_L(Op_U, Prop, nf, nt)
+        type(OperatorHubbard), intent(inout) :: Op_U
         class(Propagator), intent(inout) :: Prop
-        real(kind=8), dimension(Naux, Lq, Ltrot), intent(in) :: phi
-        integer, intent(in) :: nt
-        call Op_U1%mmult_L(Prop%Gr, Latt, phi, nt, 1)
-        call Op_U1%mmult_R(Prop%Gr, Latt, phi, nt, -1)
-        call Op_U1%mmult_L(Prop%UUL, Latt, phi, nt, 1)
+        integer, intent(in) :: nf, nt
+        integer :: ii
+        do ii = Ndim, 1, -1
+            call Op_U%mmult_L(Prop%Gr, Latt, Conf%phi_list(nf, ii, nt), ii, 1)
+            call Op_U%mmult_R(Prop%Gr, Latt, Conf%phi_list(nf, ii, nt), ii, -1)
+        enddo
+        do ii = Ndim, 1, -1
+            call Op_U%mmult_L(Prop%UUL, Latt, Conf%phi_list(nf, ii, nt), ii, 1)
+        enddo
         return
     end subroutine propU_L
     
-    subroutine propU_R(Prop, phi, nt)
+    subroutine propU_R(Op_U, Prop, nf, nt)
+        type(OperatorHubbard), intent(inout) :: Op_U
         class(Propagator), intent(inout) :: Prop
-        real(kind=8), dimension(Naux, Lq, Ltrot), intent(in) :: phi
-        integer, intent(in) :: nt
-        call Op_U1%mmult_R(Prop%Gr, Latt, phi, nt, 1)
-        call Op_U1%mmult_L(Prop%Gr, Latt, phi, nt, -1)
-        call Op_U1%mmult_R(Prop%UUR, Latt, phi, nt, 1)
+        integer, intent(in) :: nf, nt
+        integer :: ii
+        do ii = 1, Ndim
+            call Op_U%mmult_R(Prop%Gr, Latt, Conf%phi_list(nf, ii, nt), ii, 1)
+            call Op_U%mmult_L(Prop%Gr, Latt, Conf%phi_list(nf, ii, nt), ii, -1)
+        enddo
+        do ii = 1, Ndim
+            call Op_U%mmult_R(Prop%UUR, Latt, Conf%phi_list(nf, ii, nt), ii, 1)
+        enddo
         return
     end subroutine propU_R
     
-    subroutine propgrU_R(Prop, Propgr, phi, nt)
+    subroutine propgrU_R(Op_U, Prop, Propgr, nf, nt)
+        type(OperatorHubbard), intent(inout) :: Op_U
         class(Propagator), intent(inout) :: Prop
         class(PropGreen), intent(inout) :: Propgr
-        real(kind=8), dimension(Naux, Lq, Ltrot), intent(in) :: phi
-        integer, intent(in) :: nt
-        call Op_U1%mmult_R(Propgr%Grt0, Latt, phi, nt, 1)
-        call Op_U1%mmult_L(Propgr%Gr0t, Latt, phi, nt, -1)
-        call Op_U1%mmult_R(Propgr%Grtt, Latt, phi, nt, 1)
-        call Op_U1%mmult_L(Propgr%Grtt, Latt, phi, nt, -1)
-        call Op_U1%mmult_R(Prop%UUR, Latt, phi, nt, 1)
+        integer, intent(in) :: nf, nt
+        integer :: ii
+        do ii = 1, Ndim
+            call Op_U%mmult_R(Propgr%Grt0, Latt, Conf%phi_list(nf, ii, nt), ii, 1)
+            call Op_U%mmult_L(Propgr%Gr0t, Latt, Conf%phi_list(nf, ii, nt), ii, -1)
+            call Op_U%mmult_R(Propgr%Grtt, Latt, Conf%phi_list(nf, ii, nt), ii, 1)
+            call Op_U%mmult_L(Propgr%Grtt, Latt, Conf%phi_list(nf, ii, nt), ii, -1)
+        enddo
+        do ii = 1, Ndim
+            call Op_U%mmult_R(Prop%UUR, Latt, Conf%phi_list(nf, ii, nt), ii, 1)
+        enddo
         return
     end subroutine propgrU_R
     
