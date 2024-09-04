@@ -133,7 +133,7 @@ contains
         call mmult(VRVL, Prop%VUR, Prop%VUL)
 ! invULUR = UR^dagger UL^dagger = (UL*UR)^-1; character C: conjugate transpose of UUR and UUL
         call ZGEMM('C', 'C', Ndim, Ndim, Ndim, Z_one, Prop%UUR, Ndim, Prop%UUL, Ndim, dcmplx(0.d0, 0.d0), invULUR, Ndim)
-! compute: matUDV = (UL*UR)^-1 + DR VR VL DL
+! compute: matUDV = (UL*UR)^-1 - DR VR VL DL  !!!! the only difference from fermion to boson
         temp = dcmplx(0.d0, 0.d0)
         do nr = 1, Ndim ! temp(1:Ndim, nr) = VRVL(1:Ndim, nr) * DUL(nr)
             call zaxpy(Ndim, Prop%DUL(nr), VRVL(1, nr), 1, temp(1, nr), 1)
@@ -142,7 +142,7 @@ contains
         do nl = 1, Ndim ! VRVL(nl, 1:Ndim) = DUR(nl) * temp(nl, 1:Ndim)
             call zaxpy(Ndim, Prop%DUR(nl), temp(nl, 1), Ndim, VRVL(nl, 1), Ndim)
         enddo
-        matUDV = invULUR + VRVL
+        matUDV = invULUR - VRVL  !!!! the only difference from fermion to boson
 ! if ntau >Ltrot/2, decompose matUDV^dagger
         if (nt > Ltrot/2) matUDV = dconjg(transpose(matUDV))
 ! matUDV * P  = U D V
