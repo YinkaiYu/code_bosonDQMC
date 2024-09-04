@@ -7,7 +7,7 @@ module OperatorHubbard_mod
         real(kind=8), private :: NC_eff_up, ACC_eff_up
         real(kind=8), public :: acc
     contains
-        procedure :: init => Acc_init
+        procedure :: init  => Acc_init
         procedure :: reset => Acc_reset
         procedure :: count => Acc_count
         procedure :: ratio => Acc_calc_ratio

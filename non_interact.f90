@@ -8,10 +8,10 @@ module NonInteract
     type :: OperatorKinetic
         complex(kind=8), dimension(:,:), allocatable :: expT_P, expT_M
     contains
-        procedure :: make => opT_make
-        procedure :: set => opT_set
-        procedure :: mmult_R => opT_mmult_R
-        procedure :: mmult_L => opT_mmult_L
+        procedure :: make       => opT_make
+        procedure :: set        => opT_set
+        procedure :: mmult_R    => opT_mmult_R
+        procedure :: mmult_L    => opT_mmult_L
         final :: opT_clear
     end type OperatorKinetic
     
@@ -35,31 +35,16 @@ contains
         class(kagomeLattice), intent(in) :: Latt
 ! Local: 
         complex(kind=8) :: Z
-        integer :: i, ii, i_0, i_n, ix, iy, nf, no
+        integer :: ii, jj, nb
         
         HamT = dcmplx(0.d0, 0.d0)
+        Z = dcmplx( - RT, 0.d0) 
 !  nearest bond hopping
-        do no = 1, Norb
-            do ii = 1, Lq
-                i_0 = Latt%inv_dim_list(Latt%L_Bonds(ii, 0), no)
-                ix = Latt%cell_list(ii, 1)
-                iy = Latt%cell_list(ii, 2)
-                do nf = 1, Nbond
-                    i_n = Latt%inv_dim_list(Latt%L_Bonds(ii, nf), no)
-                    if (nf == 1) then
-                        Z = dcmplx( - RT, 0.d0) 
-                    elseif (nf == 2) then
-                        if (iy .NE. Nly) then
-                            Z = dcmplx( - RT, 0.d0)
-                        else
-                            Z = dcmplx( - RT, 0.d0) 
-                        endif
-                    else 
-                        write(6,*) "incorrect nearest neighbor", Nbond, nf; stop
-                    endif
-                    HamT(i_0, i_n)  = HamT(i_0, i_n) + Z
-                    HamT(i_n, i_0)  = HamT(i_n, i_0) + dconjg(Z)
-                enddo
+        do ii = 1, Ndim
+            do nb = 1, Nbond
+                jj = Latt%L_bonds(ii, nb)
+                HamT(ii,jj) = Z
+                HamT(jj,ii) = dconjg(Z)
             enddo
         enddo
         return
@@ -77,7 +62,7 @@ contains
         real(kind=8), dimension(Ndim) :: WC
         complex(kind=8), dimension(Ndim) :: dmat1, dmat2
         
-        call def_HamT(HamT, Latt)
+        call def_hamT(HamT, Latt)
         call diag(HamT, Hlp1, WC)
 
         dmat1 = dcmplx(0.d0, 0.d0)
