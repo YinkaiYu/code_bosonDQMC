@@ -1,6 +1,6 @@
 program bosonDQMC
     use LocalSweep_mod
-    use GlobalUpdate_mod
+    ! use GlobalUpdate_mod
     use FourierTrans_mod
     implicit none
     include 'mpif.h'
@@ -11,7 +11,7 @@ program bosonDQMC
     real(kind=8) :: collect, CPUT
     integer(kind=8) :: ICPU_1, ICPU_2, N_P_SEC
     
-    type(GlobalUpdate) :: Sweep_global
+    ! type(GlobalUpdate) :: Sweep_global
     type(LocalSweep) :: Sweep_local
     type(FourierTrans) :: Fourier
     type(Propagator), allocatable :: Prop
@@ -31,7 +31,7 @@ program bosonDQMC
     call WrList%make()
     call Stabilize_init()
     call Sweep_local%init()
-    if (is_global) call Sweep_global%init()
+    ! if (is_global) call Sweep_global%init()
 ! boson warm-up
     if (is_warm) then
         do nth = 1, Nwarm
@@ -46,13 +46,13 @@ program bosonDQMC
     is_beta = .true.; istau_tmp = .false.
     do nbc = 1, Nbin
         if (nbc .gt. Nthermal) istau_tmp = is_tau
-        if (is_global) call Sweep_global%sweep(Prop, WrList, iseed, is_beta)
+        ! if (is_global) call Sweep_global%sweep(Prop, WrList, iseed, is_beta)
         call Sweep_local%sweep(Prop, WrList, iseed, is_beta, istau_tmp)
         call Fourier%preq(Obs_equal)
         if (istau_tmp) call Fourier%prtau(Obs_tau)
     enddo
 ! control print
-    if (is_global) call Sweep_global%ctrl_print()
+    ! if (is_global) call Sweep_global%ctrl_print()
     call Sweep_local%ctrl_print_l(istau_tmp)
     collect = 0.d0
     call MPI_Reduce(Prop%Xmaxm, collect, 1, MPI_Real8, MPI_MAX, 0, MPI_COMM_WORLD, IERR)
@@ -72,7 +72,7 @@ program bosonDQMC
         write(50,*) 'Tot CPU time                                   :', CPUT
     endif
 ! deallocate
-    if (is_global) call Sweep_global%clear()
+    ! if (is_global) call Sweep_global%clear()
     call Sweep_local%clear()
     call Stabilize_clear()
     deallocate(Prop)

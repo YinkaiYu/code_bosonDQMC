@@ -21,9 +21,9 @@ module CalcBasic ! Global parameters
     real(kind=8),           public,     save    :: RU1, RU2
 ! update parameters
     real(kind=8),           public              :: shiftLoc
-    logical,                public              :: is_global ! global update switch: Wolff-shift joint update
-    integer,                public              :: Nglobal
-    real(kind=8),           public              :: shiftGlb(Naux)
+    ! logical,                public              :: is_global ! global update switch: Wolff-shift joint update
+    ! integer,                public              :: Nglobal
+    ! real(kind=8),           public              :: shiftGlb(Naux)
 ! initial state parameters
     integer,                public              :: iniType ! type of initial phonon field configuration
     real(kind=8),           public              :: iniAmpl ! Gaussian amplitude of initial phonon fields
@@ -51,7 +51,7 @@ contains
             read(20,*) Nwrap, Nbin, Nsweep, shiftLoc
             read(20,*) is_tau, Nthermal
             read(20,*) is_warm, Nwarm, shiftWarm(1), shiftWarm(2)
-            read(20,*) is_global, Nglobal, shiftGlb(1), shiftGlb(2)
+            ! read(20,*) is_global, Nglobal, shiftGlb(1), shiftGlb(2)
             read(20,*) iniType, iniAmpl, iniBias(1), iniBias(2)
             close(20)
         endif 
@@ -74,12 +74,12 @@ contains
         call MPI_BCAST(Nwrap, 1, MPI_Integer, 0, MPI_COMM_WORLD, IERR)
         call MPI_BCAST(Nbin, 1, MPI_Integer, 0, MPI_COMM_WORLD, IERR)
         call MPI_BCAST(Nwarm, 1, MPI_Integer, 0, MPI_COMM_WORLD, IERR)
-        call MPI_BCAST(Nglobal, 1, MPI_Integer, 0, MPI_COMM_WORLD, IERR)
+        ! call MPI_BCAST(Nglobal, 1, MPI_Integer, 0, MPI_COMM_WORLD, IERR)
         call MPI_BCAST(Nthermal, 1, MPI_Integer, 0, MPI_COMM_WORLD, IERR)
         call MPI_BCAST(Nsweep, 1, MPI_Integer, 0, MPI_COMM_WORLD, IERR)
         call MPI_BCAST(is_tau, 1, MPI_Logical, 0, MPI_COMM_WORLD, IERR)
         call MPI_BCAST(is_warm, 1, MPI_Logical, 0, MPI_COMM_WORLD, IERR)
-        call MPI_BCAST(is_global, 1, MPI_Logical, 0, MPI_COMM_WORLD, IERR)
+        ! call MPI_BCAST(is_global, 1, MPI_Logical, 0, MPI_COMM_WORLD, IERR)
         return
     end subroutine read_input
     
@@ -139,11 +139,11 @@ contains
             write(50,*) 'Hubbard U1                                     :', RU1
             write(50,*) 'Hubbard U2                                     :', RU2
             write(50,*) 'Local update auxiliary field magnitude Shift   :', shiftLoc
-            if (is_global) then
-            write(50,*) '# Global                                       :', Nglobal ! global Metropolis algorithm
-            write(50,*) 'Global shift auxiliary field magnitude for U1  :', shiftGlb(1)
-            write(50,*) 'Global shift auxiliary field magnitude for U2  :', shiftGlb(2)
-            endif
+            ! if (is_global) then
+            ! write(50,*) '# Global                                       :', Nglobal ! global Metropolis algorithm
+            ! write(50,*) 'Global shift auxiliary field magnitude for U1  :', shiftGlb(1)
+            ! write(50,*) 'Global shift auxiliary field magnitude for U2  :', shiftGlb(2)
+            ! endif
             if (is_warm) then
             write(50,*) '# Warm                                         :', Nwarm
             write(50,*) 'Thermalize auxiliary field magnitude for U1    :', shiftWarm(1)
