@@ -1,0 +1,15 @@
+1.0         1.0
+6           6           240         12.0
+6           6           240
+10          10          1           1.0
+.false.     0    
+.false.     500         1.0         1.0
+2           1.0         0.0         0.0
+
+RU1         RU2
+Nlx         Nly         Ltrot       Beta
+NlxTherm    NlyTherm    LtrotTherm
+Nwrap       Nbin        Nsweep      shiftLoc
+is_tau      Nthermal
+is_warm     Nwarm       shiftWarm1  shiftWarm2
+iniType     iniAmpl     iniBias1    iniBias2
