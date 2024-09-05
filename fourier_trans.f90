@@ -250,37 +250,32 @@ contains
     subroutine m_write_obs_equal(this, Obs)
         class(FourierTrans), intent(inout) :: this
         class(ObserEqual), intent(in) :: Obs
-!        complex(kind=8) :: gk1(Lq), gk2(Lq, Nbond), gk3(Lq, Nbond, Nbond)
+        complex(kind=8) :: correlation_up(Lq, no1, no2), correlation_do(Lq, no1, no2)
         character(len=25) :: filek
+        integer :: indexzero
         
-        filek = "den_occ"
-        call this%write_real(Obs%den_occ, filek)
-        
-        filek = "spin_occ"
-        call this%write_real(Obs%spin_occ, filek)
+        indexzero = Latt%inv_cell_list(1, 1)
             
-        filek = "bond_occ"
-        call this%write_real(Obs%bond_occ, filek)
-            
-        open(unit=80, file='filling', status='unknown', action="write", position="append")
-        write(80,*) Obs%density
-        close(80)
-        
-        open(unit=80, file='diamagnetic', status='unknown', action="write", position="append")
-        write(80,*) Obs%diam
+        open(unit=80, file='density_up', status='unknown', action="write", position="append")
+        write(80,*) Obs%density_up
         close(80)
             
-        open(unit=80, file='kinetic', status='unknown', action="write", position="append")
-        write(80,*) Obs%el_ke(1),  Obs%el_ke(2)
+        open(unit=80, file='density_do', status='unknown', action="write", position="append")
+        write(80,*) Obs%density_do
         close(80)
-        
-        open(unit=80, file='spin_average', status='unknown', action="write", position="append")
-        write(80,*) Obs%spin_avg(1),  Obs%spin_avg(2)
-        close(80)
-        
-        open(unit=80, file='spin_order', status='unknown', action="write", position="append")
-        write(80,*) Obs%spin_order(1),  Obs%spin_order(2)
-        close(80)
+
+        call Fourier_R_to_K(Obs%den_corr_up, correlation_up, Latt)
+        call Fourier_R_to_K(Obs%den_corr_do, correlation_do, Latt)
+
+        do no1 = 1, Norb
+            do no2 = 1, Norb
+                write(filek, "('den_upup_sub',I0,'',I0)") no1, no2
+                call this%write_k(correlation_up, filek, indexzero, no1, no2 )
+                write(filek, "('den_dodo_sub',I0,'',I0)") no1, no2
+                call this%write_k(correlation_do, filek, indexzero, no1, no2 )
+            enddo
+        enddo
+
         return
     end subroutine m_write_obs_equal
 
@@ -297,149 +292,23 @@ contains
         real(kind=8), dimension(Naux, Lq) :: Collect2prime
         real(kind=8) :: Collect0, Collect1prime(Nbond)
         integer :: N
-! test:
-!        real(kind=8) :: start, finish
-! collect data from different nodes
-!        if (IRANK == 0 .or. IRANK == 1) call CPU_TIME(start)
-        N = Lq
-        Collect1 = 0.d0
-        call MPI_REDUCE(Obs%den_occ, Collect1, N, MPI_real8, MPI_SUM, 0, MPI_COMM_WORLD, IERR)
-        if (IRANK == 0) Obs%den_occ = Collect1/dble(ISIZE)
-        
-        N = Naux * Lq
-        Collect2prime = 0.d0
-        call MPI_REDUCE(Obs%spin_occ, Collect2prime, N, MPI_real8, MPI_SUM, 0, MPI_COMM_WORLD, IERR)
-        if (IRANK == 0) Obs%spin_occ = Collect2prime/dble(ISIZE)
-        
-        Collect1prime = 0.d0
-        call MPI_REDUCE(Obs%spin_avg, Collect1prime, Naux, MPI_real8, MPI_SUM, 0, MPI_COMM_WORLD, IERR)
-        if (IRANK == 0) Obs%spin_avg = Collect1prime/dble(ISIZE)
-        
-        Collect1prime = 0.d0
-        call MPI_REDUCE(Obs%spin_order, Collect1prime, Naux, MPI_real8, MPI_SUM, 0, MPI_COMM_WORLD, IERR)
-        if (IRANK == 0) Obs%spin_order = Collect1prime/dble(ISIZE)
         
         Collect0 = 0.d0
-        call MPI_REDUCE(Obs%density, Collect0, 1, MPI_real8, MPI_SUM, 0, MPI_COMM_WORLD, IERR)
-        if (IRANK == 0) Obs%density = Collect0/dble(ISIZE)
-        
+        call MPI_REDUCE(Obs%density_up, Collect0, 1, MPI_real8, MPI_SUM, 0, MPI_COMM_WORLD, IERR)
+        if (IRANK == 0) Obs%density_up = Collect0/dble(ISIZE)
+
         Collect0 = 0.d0
-        call MPI_REDUCE(Obs%diam, Collect0, 1, MPI_real8, MPI_SUM, 0, MPI_COMM_WORLD, IERR)
-        if (IRANK == 0) Obs%diam = Collect0/dble(ISIZE)
-        
-        Collect1prime = 0.d0
-        call MPI_REDUCE(Obs%el_ke, Collect1prime, Nbond, MPI_real8, MPI_SUM, 0, MPI_COMM_WORLD, IERR)
-        if (IRANK == 0) Obs%el_ke = Collect1prime/dble(ISIZE)
+        call MPI_REDUCE(Obs%density_do, Collect0, 1, MPI_real8, MPI_SUM, 0, MPI_COMM_WORLD, IERR)
+        if (IRANK == 0) Obs%density_do = Collect0/dble(ISIZE)
 
-        N = Lq * Nbond
-        Collect2 = dcmplx(0.d0, 0.d0)
-        call MPI_REDUCE(Obs%bond_occ, Collect2, N, MPI_real8, MPI_SUM, 0, MPI_COMM_WORLD, IERR)
-        if (IRANK == 0) Obs%bond_occ = Collect2/dcmplx(dble(ISIZE),0.d0)
-
-!        if (IRANK == 0 .or. IRANK == 1) then
-!            call CPU_TIME(finish)
-!            print '("Time MPI_Reduce on IRANK ", i3.1, " = ", f10.5, " seconds.")', IRANK, finish - start
-!        endif
-        if (IRANK == 0) then
-!            call CPU_TIME(start)
-            call this%write_obs_equal(Obs)
-!            call CPU_TIME(finish)
-!            print '("Time fourier_trans on IRANK ", i3.1, " = ", f10.5, " seconds.")', IRANK, finish - start
-        endif
+        if (IRANK == 0) call this%write_obs_equal(Obs)
         return
     end subroutine m_process_obs_equal
     
     subroutine m_write_obs_tau(this, Obs)
         class(FourierTrans), intent(inout) :: this
         class(ObserTau), intent(in) :: Obs
-        complex(kind=8) :: gk1(Lq), gk1w(Ltrot), gk2(Lq, Ltrot)
         character(len=25) :: filek
-        integer :: indexzero, indexpi, indexqx, indexqy
-        
-        indexpi = int((Lq + Nlx) / 2) + 1
-        indexzero = 1
-        indexqx = 2
-        indexqy = Nlx + 1
-        
-        call Fourier_R_to_K(Obs%spin_tau, gk2, Latt)
-        call this%integrate_susc(gk2, gk1)
-        filek = "sdw_susc"
-        call this%write_reciprocal(gk1, filek)
-        filek = "sdw_pipi_susc"
-        call this%write_k(gk1, filek, indexpi)
-        filek = "sdw_zero_susc"
-        call this%write_k(gk1, filek, indexzero)
-        
-        call Fourier_R_to_K(Obs%charge_d_tau, gk2, Latt)
-        filek = "cdw_d_pipi_tau"
-        call this%write_k_tau(gk2, filek, indexpi)
-        call this%integrate_susc(gk2, gk1)
-        filek = "cdw_d_susc"
-        call this%write_reciprocal(gk1, filek)
-        filek = "cdw_d_pipi_susc"
-        call this%write_k(gk1, filek, indexpi)
-        filek = "cdw_d_zero_susc"
-        call this%write_k(gk1, filek, indexzero)
-        
-        call Fourier_R_to_K(Obs%charge_s_tau, gk2, Latt)
-        filek = "cdw_s_pipi_tau"
-        call this%write_k_tau(gk2, filek, indexpi)
-        call this%integrate_susc(gk2, gk1)
-        filek = "cdw_s_susc"
-        call this%write_reciprocal(gk1, filek)
-        filek = "cdw_s_pipi_susc"
-        call this%write_k(gk1, filek, indexpi)
-        filek = "cdw_s_zero_susc"
-        call this%write_k(gk1, filek, indexzero)
-        
-        filek = "g_r0_tau"
-        call this%write_r_tau(Obs%single_tau, filek, Lq)
-        call Fourier_R_to_K(Obs%single_tau, gk2, Latt)
-        call this%integrate_susc(gk2, gk1)
-        filek = "g_susc"
-        call this%write_reciprocal(gk1, filek)
-        filek = "g_pipi_susc"
-        call this%write_k(gk1, filek, indexpi)
-        filek = "g_zero_susc"
-        call this%write_k(gk1, filek, indexzero)
-        
-        call Fourier_R_to_K(Obs%curxx_tau, gk2, Latt)
-        filek = "curxx_L_tau"
-        call this%write_k_tau(gk2, filek, indexqx)
-        filek = "curxx_T_tau"
-        call this%write_k_tau(gk2, filek, indexqy)
-        filek = "curxx_zero_tau"
-        call this%write_k_tau(gk2, filek, indexzero)
-        call this%integrate_susc(gk2, gk1)
-        call this%integrate_susc_freq(gk2, gk1w)
-        filek = "curxx_freq"
-        call this%write_w(gk1w, filek)
-        filek = "curxx_susc"
-        call this%write_reciprocal(gk1, filek)
-        filek = "curxx_L_susc"
-        call this%write_k(gk1, filek, indexqx)
-        filek = "curxx_T_susc"
-        call this%write_k(gk1, filek, indexqy)
-        filek = "curxx_zero_susc"
-        call this%write_k(gk1, filek, indexzero)
-        
-        call Fourier_R_to_K(Obs%pair_s_tau, gk2, Latt)
-        filek = "pair_s_zero_tau"
-        call this%write_k_tau(gk2, filek, indexzero)
-        call this%integrate_susc(gk2, gk1)
-        filek = "pair_s_susc"
-        call this%write_reciprocal(gk1, filek)
-        filek = "pair_s_zero_susc"
-        call this%write_k(gk1, filek, indexzero)
-        
-        call Fourier_R_to_K(Obs%pair_d_tau, gk2, Latt)
-        filek = "pair_d_zero_tau"
-        call this%write_k_tau(gk2, filek, indexzero)
-        call this%integrate_susc(gk2, gk1)
-        filek = "pair_d_susc"
-        call this%write_reciprocal(gk1, filek)
-        filek = "pair_d_zero_susc"
-        call this%write_k(gk1, filek, indexzero)
         return
     end subroutine m_write_obs_tau
     
@@ -455,33 +324,6 @@ contains
         integer :: N
 
         N = Lq * Ltrot
-        Collect2 = dcmplx(0.d0, 0.d0)
-        call MPI_REDUCE(Obs%spin_tau, Collect2, N, MPI_complex16, MPI_SUM, 0, MPI_COMM_WORLD, IERR)
-        if (IRANK == 0) Obs%spin_tau = Collect2/dcmplx(dble(ISIZE),0.d0)
-        
-        Collect2 = dcmplx(0.d0, 0.d0)
-        call MPI_REDUCE(Obs%charge_d_tau, Collect2, N, MPI_complex16, MPI_SUM, 0, MPI_COMM_WORLD, IERR)
-        if (IRANK == 0) Obs%charge_d_tau = Collect2/dcmplx(dble(ISIZE),0.d0)
-        
-        Collect2 = dcmplx(0.d0, 0.d0)
-        call MPI_REDUCE(Obs%charge_s_tau, Collect2, N, MPI_complex16, MPI_SUM, 0, MPI_COMM_WORLD, IERR)
-        if (IRANK == 0) Obs%charge_s_tau = Collect2/dcmplx(dble(ISIZE),0.d0)
-        
-        Collect2 = dcmplx(0.d0, 0.d0)
-        call MPI_REDUCE(Obs%single_tau, Collect2, N, MPI_complex16, MPI_SUM, 0, MPI_COMM_WORLD, IERR)
-        if (IRANK == 0) Obs%single_tau = Collect2/dcmplx(dble(ISIZE),0.d0)
-        
-        Collect2 = dcmplx(0.d0, 0.d0)
-        call MPI_REDUCE(Obs%pair_s_tau, Collect2, N, MPI_complex16, MPI_SUM, 0, MPI_COMM_WORLD, IERR)
-        if (IRANK == 0) Obs%pair_s_tau = Collect2/dcmplx(dble(ISIZE),0.d0)
-        
-        Collect2 = dcmplx(0.d0, 0.d0)
-        call MPI_REDUCE(Obs%pair_d_tau, Collect2, N, MPI_complex16, MPI_SUM, 0, MPI_COMM_WORLD, IERR)
-        if (IRANK == 0) Obs%pair_d_tau = Collect2/dcmplx(dble(ISIZE),0.d0)
-        
-        Collect2 = dcmplx(0.d0, 0.d0)
-        call MPI_REDUCE(Obs%curxx_tau, Collect2, N, MPI_complex16, MPI_SUM, 0, MPI_COMM_WORLD, IERR)
-        if (IRANK == 0) Obs%curxx_tau = Collect2/dcmplx(dble(ISIZE),0.d0)
 
         if (IRANK == 0) call this%write_obs_tau(Obs)
         return
