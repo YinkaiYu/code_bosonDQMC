@@ -252,7 +252,7 @@ contains
         class(ObserEqual), intent(in) :: Obs
         complex(kind=8) :: correlation_up(Lq, no1, no2), correlation_do(Lq, no1, no2)
         character(len=25) :: filek
-        integer :: indexzero
+        integer :: indexzero, no1, no2
         
         indexzero = Latt%inv_cell_list(1, 1)
             
