@@ -60,7 +60,7 @@ contains
         call MPI_BCAST(RU1, 1, MPI_Real8, 0, MPI_COMM_WORLD, IERR)
         call MPI_BCAST(RU2, 1, MPI_Real8, 0, MPI_COMM_WORLD, IERR)
         call MPI_BCAST(shiftLoc, 1, MPI_Real8, 0, MPI_COMM_WORLD, IERR)
-        call MPI_BCAST(shiftGlb, Naux, MPI_Real8, 0, MPI_COMM_WORLD, IERR)
+        ! call MPI_BCAST(shiftGlb, Naux, MPI_Real8, 0, MPI_COMM_WORLD, IERR)
         call MPI_BCAST(shiftWarm, Naux, MPI_Real8, 0, MPI_COMM_WORLD, IERR)
         call MPI_BCAST(iniAmpl, 1, MPI_Real8, 0, MPI_COMM_WORLD, IERR)
         call MPI_BCAST(iniBias, Naux, MPI_Real8, 0, MPI_COMM_WORLD, IERR)

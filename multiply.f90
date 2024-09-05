@@ -8,6 +8,7 @@ contains
         type(OperatorHubbard), intent(inout) :: Op_U
         class(Propagator), intent(inout) :: Prop
         integer, intent(in) :: nt, nf
+        integer :: ii
         do ii = 1, Ndim
             call Op_U%mmult_R(Prop%UUR, Latt, Conf%phi_list(nf, ii, nt), ii, 1)
         enddo

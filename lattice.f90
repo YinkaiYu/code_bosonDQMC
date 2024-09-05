@@ -20,7 +20,7 @@ module MyLattice ! definition on space geometry
 contains
     subroutine Lattice_make(Latt)
         class(kagomeLattice), intent(inout) :: Latt
-        integer :: i3, i2, i1, i0, i, j, nf, nc, n, no, nx, ny, n1, n2
+        integer :: i3, i2, i1, i0, i, j, nf, nc, n, no, nx, ny
         integer :: n1, n2, ndix, ii, jj, ix, jx, iy, jy, nt, iit, imjx, imjy, nn1, nn2
         
         allocate(Latt%dim_list(Ndim, 1:2), Latt%inv_dim_list(Lq, Norb))

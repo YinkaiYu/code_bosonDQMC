@@ -29,8 +29,8 @@ contains
         call Op_T%make()
         call Op_T%set(Latt)
 ! set H-S exponential
-        call Op_U1%set()
-        call Op_U2%set()
+        call Op_U1%set(RU1)
+        call Op_U2%set(RU2)
         return
     end subroutine Model_init
     

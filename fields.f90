@@ -150,7 +150,7 @@ contains
         real(kind=8), dimension(Naux, Lq, Ltrot), intent(inout) :: phi_list
         real(kind=8), dimension(Naux, NdimTherm, LtrotTherm), intent(in) :: phi_list_therm
         class(kagomeLattice), intent(in) :: Latt
-        integer :: nt, ntt, nx, ny, ii, iit, nc, no
+        integer :: nt, ntt, nx, ny, ii, iit, nc, no, n
         integer :: cell_list_therm(LqTherm, 1:2), inv_cell_list_therm(NlxTherm, NlyTherm)
         integer :: dim_list_therm(NdimTherm, 1:2), inv_dim_list_therm(LqTherm, Norb)
 ! set therm list
@@ -158,9 +158,9 @@ contains
         do no = 1, Norb
             do n = 1, LqTherm
                 nc = nc + 1
-                dim_list(nc, 1) = n
-                dim_list(nc, 2) = no
-                inv_dim_list(n, no) = nc
+                dim_list_therm(nc, 1) = n
+                dim_list_therm(nc, 2) = no
+                inv_dim_list_therm(n, no) = nc
             enddo
         enddo
         nc = 0
@@ -219,7 +219,6 @@ contains
         enddo
         do ii = 1, Ndim
             do nt = LtrotTherm+1, Ltrot
-                ii  = Latt%inv_cell_list(nx, ny)
                 ntt = nt - LtrotTherm
                 phi_list(:, ii, nt) = phi_list(:, ii, ntt)
             enddo

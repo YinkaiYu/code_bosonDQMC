@@ -250,7 +250,7 @@ contains
     subroutine m_write_obs_equal(this, Obs)
         class(FourierTrans), intent(inout) :: this
         class(ObserEqual), intent(in) :: Obs
-        complex(kind=8) :: correlation_up(Lq, no1, no2), correlation_do(Lq, no1, no2)
+        complex(kind=8) :: correlation_up(Lq, Norb, Norb), correlation_do(Lq, Norb, Norb)
         character(len=25) :: filek
         integer :: indexzero, no1, no2
         
