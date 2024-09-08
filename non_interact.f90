@@ -36,6 +36,7 @@ contains
 ! Local: 
         complex(kind=8) :: Z
         integer :: ii, jj, nb
+! integer :: i, j
         
         HamT = dcmplx(0.d0, 0.d0)
         Z = dcmplx( - RT, 0.d0) 
@@ -47,6 +48,21 @@ contains
                 HamT(jj,ii) = dconjg(Z)
             enddo
         enddo
+
+! write(6,*) 'HamT'
+! write(6, "(A)", advance="no") '        '  
+! do j = 1, Ndim
+!     write(6, "(I17)", advance="no") j  
+! end do
+! write(6, *)
+! do i = 1, Ndim
+!     write(6, "(I16)", advance="no") i  
+!     do j = 1, Ndim
+!         write(6, "(' (',F6.2,',',F6.2,') ')", advance="no") real(HamT(i,j), kind=8), aimag(HamT(i,j))
+!     end do
+!     write(6, *)
+! end do
+
         return
     end subroutine def_hamT
 
