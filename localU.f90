@@ -42,6 +42,9 @@ contains
         real(kind=8) :: ratio_abs
         complex(kind=8) :: ratio_det, ratio_exp
         integer :: mm, nn
+        complex(kind=8), dimension(Ndim, Ndim) :: Gr_new
+        complex(kind=8), dimension(Ndim) :: temp_vec
+        complex(kind=8) :: temp_alpha
 
 ! Local update on space-time (ii, ntau) for auxiliary field flavor (nf)
         phi_old = Conf%phi_list(nf, ii, ntau)
@@ -58,9 +61,14 @@ contains
         random = ranf(iseed)
         if (ratio_abs .gt. random) then
             call Op_U%Acc_U_local%count(.true.)
-            ! Gr(1:Ndim,1:Ndim) = Gr(1:Ndim,1:Ndim) - Gr(1:Ndim,ii) * ratio_det * Op_U%Delta * Gr(ii,1:Ndim)
-            call ZGEMM('N', 'N', Ndim, Ndim, 1, -ratio_det * Op_U%Delta, &
-                    & Gr(1:Ndim, ii), Ndim, Gr(ii, 1:Ndim), 1, 1.0d0, Gr, Ndim)
+
+            ! Gr = Gr - Gr(:,ii) * ratio_det * Op_U%Delta * (ZKRON(ii,:) - Gr(ii,:))
+            Gr_new = Gr
+            temp_alpha = - ratio_det * Op_U%Delta
+            temp_vec = ZKRON(ii, 1:Ndim) - Gr(ii, 1:Ndim)
+            call ZGERU(Ndim, Ndim, temp_alpha, Gr(1:Ndim,ii), 1, temp_vec, 1, Gr_new, Ndim)
+            Gr = Gr_new
+
             Conf%phi_list(nf, ii, ntau) = phi_new
         else
             call Op_U%Acc_U_local%count(.false.)

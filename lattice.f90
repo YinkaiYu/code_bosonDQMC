@@ -106,28 +106,28 @@ contains
                     if (no==1) then
                         ! A --> B, C
                         n1  = Latt%inv_cell_list( npbc(ix  , Nlx), npbc(iy+1, Nly) )
-                        nn1 = Latt%inv_dim_list(n, 2)
+                        nn1 = Latt%inv_dim_list(n1, 2)
                         Latt%L_bonds(ii, 1) = nn1
                         n2  = Latt%inv_cell_list( npbc(ix-1, Nlx), npbc(iy+1, Nly) )
-                        nn2 = Latt%inv_dim_list(n, 3)
+                        nn2 = Latt%inv_dim_list(n2, 3)
                         Latt%L_bonds(ii, 2) = nn2
                     elseif (no==2) then
                         ! B --> C, A
                         n1  = Latt%inv_cell_list( npbc(ix-1, Nlx), npbc(iy  , Nly) )
-                        nn1 = Latt%inv_dim_list(n, 3)
+                        nn1 = Latt%inv_dim_list(n1, 3)
                         Latt%L_bonds(ii, 1) = nn1
                         n2  = Latt%inv_cell_list( npbc(ix  , Nlx), npbc(iy  , Nly) )
-                        nn2 = Latt%inv_dim_list(n, 1)
+                        nn2 = Latt%inv_dim_list(n2, 1)
                         Latt%L_bonds(ii, 2) = nn2
                     elseif (no==3) then
                         ! C --> A, B
                         n1  = Latt%inv_cell_list( npbc(ix  , Nlx), npbc(iy  , Nly) )
-                        nn1 = Latt%inv_dim_list(n, 1)
+                        nn1 = Latt%inv_dim_list(n1, 1)
                         Latt%L_bonds(ii, 1) = nn1
                         n2  = Latt%inv_cell_list( npbc(ix  , Nlx), npbc(iy  , Nly) )
-                        nn2 = Latt%inv_dim_list(n, 2)
+                        nn2 = Latt%inv_dim_list(n2, 2)
                         Latt%L_bonds(ii, 2) = nn2
-                    endif
+                    endif           
                 enddo
             enddo
         enddo
