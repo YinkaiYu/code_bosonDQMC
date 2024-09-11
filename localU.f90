@@ -42,12 +42,9 @@ contains
         real(kind=8) :: ratio_abs
         complex(kind=8) :: ratio_det, ratio_exp
         integer :: mm, nn
-! temp debugging
-complex(kind=8), dimension(Ndim, Ndim) :: Grinv, Grinv_new, temp, tempinv, Gr_new
-integer :: i, j, k, l
-complex(kind=8) :: det
-complex(kind=8), dimension(Ndim) :: temp_vec
-complex(kind=8) :: temp_alpha
+        complex(kind=8), dimension(Ndim, Ndim) :: Gr_new
+        complex(kind=8), dimension(Ndim) :: temp_vec
+        complex(kind=8) :: temp_alpha
 
 ! Local update on space-time (ii, ntau) for auxiliary field flavor (nf)
         phi_old = Conf%phi_list(nf, ii, ntau)
@@ -64,87 +61,13 @@ complex(kind=8) :: temp_alpha
         random = ranf(iseed)
         if (ratio_abs .gt. random) then
             call Op_U%Acc_U_local%count(.true.)
-            ! ! Gr(1:Ndim,1:Ndim) = Gr(1:Ndim,1:Ndim) - Gr(1:Ndim,ii) * ratio_det * Op_U%Delta * Gr(ii,1:Ndim)
-            ! call ZGEMM('N', 'N', Ndim, Ndim, 1, -ratio_det * Op_U%Delta, &
-            !         & Gr(1:Ndim, ii), Ndim, Gr(ii, 1:Ndim), 1, 1.0d0, Gr, Ndim)
 
-! write(6,*) 'temp debugging (form 1)', nf, ii, ntau
-! call inv(Gr, Grinv, det)
-! do i = 1, Ndim
-!     do j = 1, Ndim
-!         Grinv_new(i,j) = Grinv(i,j)
-!         if (i == ii) Grinv_new(i,j) = Grinv(i,j) * (Op_U%Delta + dcmplx(1.d0,0.d0)) - ZKRON(i,j) * Op_U%Delta
-!     enddo
-! enddo
-! call inv(Grinv_new, Gr, det)
-
-! write(6,*) 'temp debugging (form 1.1)', nf, ii, ntau
-! call inv(Gr, Grinv, det)
-! do i = 1, Ndim
-!     do j = 1, Ndim
-!         temp(i,j) = ZKRON(i,j)
-!         if (i == ii) temp(i,j) = ZKRON(i,j) + Op_U%Delta * (ZKRON(i,j) - Gr(i,j))
-!     enddo
-! enddo
-! Grinv_new = dcmplx(0.d0,0.d0)
-! do i = 1, Ndim
-!     do j = 1, Ndim
-!         do k = 1, Ndim
-!             Grinv_new(i,k) = Grinv_new(i,k) + temp(i,j) * Grinv(j,k)
-!         enddo
-!     enddo
-! enddo
-! call inv(Grinv_new, Gr, det)
-
-! write(6,*) 'temp debugging (form 2)', nf, ii, ntau
-! do i = 1, Ndim
-!     do j = 1, Ndim
-!         temp(i,j) = ZKRON(i,j)
-!         if (i == ii) temp(i,j) = ZKRON(i,j) + Op_U%Delta * (ZKRON(i,j) - Gr(i,j))
-!     enddo
-! enddo
-! call inv(temp, tempinv, det)
-! temp = dcmplx(0.d0,0.d0)
-! do i = 1, Ndim
-!     do j = 1, Ndim
-!         do k = 1, Ndim
-!             temp(i,k) = temp(i,k) + Gr(i,j) * tempinv(j,k)
-!         enddo
-!     enddo
-! enddo
-! Gr(1:Ndim,1:Ndim) = temp(1:Ndim,1:Ndim)
-
-! write(6,*) 'temp debugging (form 3)', nf, ii, ntau
-! do i = 1, Ndim
-!     do j = 1, Ndim
-!         temp(i,j) = ZKRON(i,j)
-!         if (i == ii) temp(i,j) = ZKRON(i,j) - Op_U%Delta * (ZKRON(i,j) - Gr(i,j)) * ratio_det
-!     enddo
-! enddo
-! Gr_new = dcmplx(0.d0,0.d0)
-! do i = 1, Ndim
-!     do j = 1, Ndim
-!         do k = 1, Ndim
-!             Gr_new(i,k) = Gr_new(i,k) + Gr(i,j) * temp(j,k)
-!         enddo
-!     enddo
-! enddo
-! Gr(1:Ndim,1:Ndim) = Gr_new(1:Ndim,1:Ndim)
-
-write(6,*) 'temp debugging (form 4)', nf, ii, ntau
-Gr_new = dcmplx(0.d0,0.d0)
-do i = 1, Ndim
-    do j = 1, Ndim
-        Gr_new(i,j) = Gr(i,j) - Gr(i,ii) * ratio_det * Op_U%Delta * (ZKRON(ii,j) - Gr(ii,j))
-    enddo
-enddo
-Gr(1:Ndim,1:Ndim) = Gr_new(1:Ndim,1:Ndim)
-
-! write(6,*) 'temp debugging (form final)', nf, ii, ntau
-! ! Gr = Gr - Gr(:,ii) * ratio_det * Op_U%Delta * (ZKRON(ii,:) - Gr(ii,:))
-! temp_alpha = - ratio_det * Op_U%Delta
-! temp_vec = ZKRON(ii, 1:Ndim) - Gr(ii, 1:Ndim)
-! call ZGERU(Ndim, Ndim, temp_alpha, Gr(1:Ndim,ii), 1, temp_vec, 1, Gr, Ndim)
+            ! Gr = Gr - Gr(:,ii) * ratio_det * Op_U%Delta * (ZKRON(ii,:) - Gr(ii,:))
+            Gr_new = Gr
+            temp_alpha = - ratio_det * Op_U%Delta
+            temp_vec = ZKRON(ii, 1:Ndim) - Gr(ii, 1:Ndim)
+            call ZGERU(Ndim, Ndim, temp_alpha, Gr(1:Ndim,ii), 1, temp_vec, 1, Gr_new, Ndim)
+            Gr = Gr_new
 
             Conf%phi_list(nf, ii, ntau) = phi_new
         else
