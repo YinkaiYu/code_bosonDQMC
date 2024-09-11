@@ -39,7 +39,7 @@ contains
 ! integer :: i, j
         
         HamT = dcmplx(0.d0, 0.d0)
-        Z = dcmplx( - RT, 0.d0) 
+        Z = dcmplx( RT, 0.d0) 
 !  nearest bond hopping
         do ii = 1, Ndim
             do nb = 1, Nbond
@@ -47,6 +47,10 @@ contains
                 HamT(ii,jj) = Z
                 HamT(jj,ii) = dconjg(Z)
             enddo
+        enddo
+
+        do ii = 1, Ndim
+            HamT(ii,ii) = HamT(ii,ii) - dcmplx(mu, 0.d0)
         enddo
 
 ! write(6,*) 'HamT'
