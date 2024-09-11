@@ -7,6 +7,7 @@ module NonInteract
     
     type :: OperatorKinetic
         complex(kind=8), dimension(:,:), allocatable :: expT_P, expT_M
+        real(kind=8) :: energy_min, energy_max, bandwidth
     contains
         procedure :: make       => opT_make
         procedure :: set        => opT_set
@@ -39,7 +40,7 @@ contains
 ! integer :: i, j
         
         HamT = dcmplx(0.d0, 0.d0)
-        Z = dcmplx( - RT, 0.d0) 
+        Z = dcmplx( RT, 0.d0) 
 !  nearest bond hopping
         do ii = 1, Ndim
             do nb = 1, Nbond
@@ -47,6 +48,10 @@ contains
                 HamT(ii,jj) = Z
                 HamT(jj,ii) = dconjg(Z)
             enddo
+        enddo
+
+        do ii = 1, Ndim
+            HamT(ii,ii) = HamT(ii,ii) - dcmplx(mu, 0.d0)
         enddo
 
 ! write(6,*) 'HamT'
@@ -80,6 +85,10 @@ contains
         
         call def_hamT(HamT, Latt)
         call diag(HamT, Hlp1, WC)
+
+        this%energy_min = minval(WC)
+        this%energy_max = maxval(WC)
+        this%bandwidth = this%energy_max - this%energy_min
 
         dmat1 = dcmplx(0.d0, 0.d0)
         dmat2 = dcmplx(0.d0, 0.d0)

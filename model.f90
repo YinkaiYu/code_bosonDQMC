@@ -28,6 +28,9 @@ contains
         allocate(Op_T)
         call Op_T%make()
         call Op_T%set(Latt)
+        write(50,*) 'highest energy level of single particle Ham     :', Op_T%energy_max
+        write(50,*) 'lowest  energy level of single particle Ham     :', Op_T%energy_min
+        write(50,*) 'bandwidth            of single particle Ham     :', Op_T%bandwidth
 ! set H-S exponential
         call Op_U1%set(RU1)
         call Op_U2%set(RU2)
