@@ -1,12 +1,12 @@
-0.0         0.0
-3           3           10          1.0
-3           3           10 
-1           10          1           0.3
+-1.0        1.0         -3.0
+9           9           90          9.0
+9           9           90 
+10          100         1           0.3
 .false.     0    
 .false.     500         1.0         1.0
 2           0.1         0.0         0.0
 
-RU1         RU2
+RU1         RU2         mu
 Nlx         Nly         Ltrot       Beta
 NlxTherm    NlyTherm    LtrotTherm
 Nwrap       Nbin        Nsweep      shiftLoc

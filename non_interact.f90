@@ -7,6 +7,7 @@ module NonInteract
     
     type :: OperatorKinetic
         complex(kind=8), dimension(:,:), allocatable :: expT_P, expT_M
+        real(kind=8) :: energy_min, energy_max, bandwidth
     contains
         procedure :: make       => opT_make
         procedure :: set        => opT_set
@@ -84,6 +85,10 @@ contains
         
         call def_hamT(HamT, Latt)
         call diag(HamT, Hlp1, WC)
+
+        this%energy_min = minval(WC)
+        this%energy_max = maxval(WC)
+        this%bandwidth = this%energy_max - this%energy_min
 
         dmat1 = dcmplx(0.d0, 0.d0)
         dmat2 = dcmplx(0.d0, 0.d0)
