@@ -5,6 +5,7 @@ module ObserEqual_mod
     
     type, public :: ObserEqual
         complex(kind=8), dimension(:,:,:), allocatable  :: den_corr_up, den_corr_do
+        complex(kind=8), dimension(:), allocatable      :: den_corr_updo
         real(kind=8)                                    :: density_up,  density_do
         real(kind=8)                                    :: kinetic, doubleOcc
     contains
@@ -18,24 +19,25 @@ module ObserEqual_mod
 contains
     subroutine Obs_equal_make(this)
         class(ObserEqual), intent(inout) :: this
-        allocate( this%den_corr_up(Lq, Norb, Norb), this%den_corr_do(Lq, Norb, Norb) )
+        allocate( this%den_corr_up(Lq, Norb, Norb), this%den_corr_do(Lq, Norb, Norb), this%den_corr_updo(Lq) )
         return
     end subroutine Obs_equal_make
     
     subroutine Obs_equal_clear(this)
         type(ObserEqual), intent(inout) :: this
-        deallocate( this%den_corr_up, this%den_corr_do )
+        deallocate( this%den_corr_up, this%den_corr_do, this%den_corr_updo )
         return
     end subroutine Obs_equal_clear
     
     subroutine Obs_equal_reset(this)
         class(ObserEqual), intent(inout) :: this
-        this%den_corr_up = dcmplx(0.d0,0.d0)
-        this%den_corr_do = dcmplx(0.d0,0.d0)
+        this%den_corr_up   = dcmplx(0.d0,0.d0)
+        this%den_corr_do   = dcmplx(0.d0,0.d0)
+        this%den_corr_updo = dcmplx(0.d0,0.d0)
         this%density_up  = 0.d0
         this%density_do  = 0.d0
-        this%kinetic  = 0.d0
-        this%doubleOcc  = 0.d0
+        this%kinetic     = 0.d0
+        this%doubleOcc   = 0.d0
         return
     end subroutine Obs_equal_reset
     
@@ -50,6 +52,7 @@ contains
         this%density_do  = this%density_do  * znorm
         this%kinetic     = this%kinetic     * znorm
         this%doubleOcc   = this%doubleOcc   * znorm
+        this%den_corr_updo = this%den_corr_updo * znorm
         return
     end subroutine Obs_equal_ave
     
@@ -61,7 +64,7 @@ contains
 ! Local: 
         complex(kind=8), dimension(Ndim, Ndim) :: Grupc, Grup
         complex(kind=8), dimension(Ndim, Ndim) :: Grdoc, Grdo
-        integer :: i, j, no1, no2, ii, jj, imj, nb
+        integer :: i, j, no1, no2, ii, jj, imj, nb, no
         
         Grup    = Prop%Gr                           !   Gr(i, j)    = <b_i b^+_j >
         Grupc   = transpose(Grup) - ZKRON           !   Grc(i, j)   = <b^+_i b_j > = <b_i b^+_j > - δ(i,j)
@@ -85,6 +88,17 @@ contains
                         this%den_corr_up(imj, no1, no2) = this%den_corr_up(imj, no1, no2) + ( Grupc(ii,ii) * Grupc(jj,jj) + Grupc(ii,jj) * Grup(ii,jj) ) / dcmplx(dble(Lq), 0.d0)
                         this%den_corr_do(imj, no1, no2) = this%den_corr_do(imj, no1, no2) + ( Grdoc(ii,ii) * Grdoc(jj,jj) + Grdoc(ii,jj) * Grdo(ii,jj) ) / dcmplx(dble(Lq), 0.d0)
                     enddo
+                enddo
+            enddo
+        enddo
+
+        do i = 1, Lq
+            do j = 1, Lq
+                imj = Latt%imj(i, j)
+                do no = 1, Norb
+                    ii = Latt%inv_dim_list(i, no)
+                    jj = Latt%inv_dim_list(j, no)
+                    this%den_corr_updo(imj) = this%den_corr_updo(imj) + ( Grupc(ii,ii) * Grdoc(ii,ii) ) / dcmplx(dble(Lq), 0.d0)
                 enddo
             enddo
         enddo

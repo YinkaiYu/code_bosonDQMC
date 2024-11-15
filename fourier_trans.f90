@@ -250,7 +250,7 @@ contains
     subroutine m_write_obs_equal(this, Obs)
         class(FourierTrans), intent(inout) :: this
         class(ObserEqual), intent(in) :: Obs
-        complex(kind=8) :: correlation_up(Lq, Norb, Norb), correlation_do(Lq, Norb, Norb)
+        complex(kind=8) :: correlation_up(Lq, Norb, Norb), correlation_do(Lq, Norb, Norb), correlation_updo(Lq)
         character(len=25) :: filek
         integer :: indexzero, no1, no2
         
@@ -274,6 +274,7 @@ contains
 
         call Fourier_R_to_K(Obs%den_corr_up, correlation_up, Latt)
         call Fourier_R_to_K(Obs%den_corr_do, correlation_do, Latt)
+        call Fourier_R_to_K(Obs%den_corr_updo, correlation_updo, Latt)
 
         do no1 = 1, Norb
             do no2 = 1, Norb
@@ -283,6 +284,9 @@ contains
                 call this%write_k(correlation_do, filek, indexzero, no1, no2 )
             enddo
         enddo
+
+        filek = 'den_updo'
+        call this%write_k(correlation_updo, filek, indexzero, no1, no2 )
 
         return
     end subroutine m_write_obs_equal
