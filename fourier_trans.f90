@@ -263,6 +263,14 @@ contains
         open(unit=80, file='density_do', status='unknown', action="write", position="append")
         write(80,*) Obs%density_do
         close(80)
+            
+        open(unit=80, file='kinetic', status='unknown', action="write", position="append")
+        write(80,*) Obs%kinetic
+        close(80)
+            
+        open(unit=80, file='doubleOcc', status='unknown', action="write", position="append")
+        write(80,*) Obs%doubleOcc
+        close(80)
 
         call Fourier_R_to_K(Obs%den_corr_up, correlation_up, Latt)
         call Fourier_R_to_K(Obs%den_corr_do, correlation_do, Latt)

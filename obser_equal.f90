@@ -6,6 +6,7 @@ module ObserEqual_mod
     type, public :: ObserEqual
         complex(kind=8), dimension(:,:,:), allocatable  :: den_corr_up, den_corr_do
         real(kind=8)                                    :: density_up,  density_do
+        real(kind=8)                                    :: kinetic, doubleOcc
     contains
         procedure :: make   => Obs_equal_make
         procedure :: reset  => Obs_equal_reset
@@ -33,6 +34,8 @@ contains
         this%den_corr_do = dcmplx(0.d0,0.d0)
         this%density_up  = 0.d0
         this%density_do  = 0.d0
+        this%kinetic  = 0.d0
+        this%doubleOcc  = 0.d0
         return
     end subroutine Obs_equal_reset
     
@@ -45,6 +48,8 @@ contains
         this%den_corr_do = this%den_corr_do * znorm
         this%density_up  = this%density_up  * znorm
         this%density_do  = this%density_do  * znorm
+        this%kinetic     = this%kinetic     * znorm
+        this%doubleOcc   = this%doubleOcc   * znorm
         return
     end subroutine Obs_equal_ave
     
@@ -56,7 +61,7 @@ contains
 ! Local: 
         complex(kind=8), dimension(Ndim, Ndim) :: Grupc, Grup
         complex(kind=8), dimension(Ndim, Ndim) :: Grdoc, Grdo
-        integer :: i, j, no1, no2, ii, jj, imj
+        integer :: i, j, no1, no2, ii, jj, imj, nb
         
         Grup    = Prop%Gr                           !   Gr(i, j)    = <b_i b^+_j >
         Grupc   = transpose(Grup) - ZKRON           !   Grc(i, j)   = <b^+_i b_j > = <b_i b^+_j > - δ(i,j)
@@ -65,8 +70,9 @@ contains
         Grdoc   = dconjg(transpose(Grdo)) - ZKRON   !   Grc(i, j)   = <c^+_i c_j > = <c_i c^+_j > - δ(i,j)
         
         do ii = 1, Ndim
-            this%density_up = this%density_up + real(Grupc(ii,ii)) / dble(Lq)
-            this%density_do = this%density_do + real(Grdoc(ii,ii)) / dble(Lq)
+            this%density_up = this%density_up + real( Grupc(ii,ii) ) / dble(Lq)
+            this%density_do = this%density_do + real( Grdoc(ii,ii) ) / dble(Lq)
+            this%doubleOcc  = this%doubleOcc  + real( Grupc(ii,ii) * Grdoc(ii,ii) ) / dble(Lq)
         enddo
 
         do i = 1, Lq
@@ -76,10 +82,17 @@ contains
                     do no2 = 1, Norb
                         ii = Latt%inv_dim_list(i, no1)
                         jj = Latt%inv_dim_list(j, no2)
-                        this%den_corr_up(imj, no1, no2) = this%den_corr_up(imj, no1, no2) + ( Grupc(ii,ii) * Grupc(jj,jj) + Grupc(ii,jj) * Grup(jj,jj) ) / dcmplx(dble(Lq), 0.d0)
-                        this%den_corr_do(imj, no1, no2) = this%den_corr_do(imj, no1, no2) + ( Grdoc(ii,ii) * Grdoc(jj,jj) + Grdoc(ii,jj) * Grdo(jj,jj) ) / dcmplx(dble(Lq), 0.d0)
+                        this%den_corr_up(imj, no1, no2) = this%den_corr_up(imj, no1, no2) + ( Grupc(ii,ii) * Grupc(jj,jj) + Grupc(ii,jj) * Grup(ii,jj) ) / dcmplx(dble(Lq), 0.d0)
+                        this%den_corr_do(imj, no1, no2) = this%den_corr_do(imj, no1, no2) + ( Grdoc(ii,ii) * Grdoc(jj,jj) + Grdoc(ii,jj) * Grdo(ii,jj) ) / dcmplx(dble(Lq), 0.d0)
                     enddo
                 enddo
+            enddo
+        enddo
+
+        do ii = 1, Ndim
+            do nb = 1, Nbond
+                jj = Latt%L_bonds(ii, nb)
+                this%kinetic = this%kinetic + RT * real( Grupc(ii,jj) + Grupc(jj,ii) + Grdoc(ii,jj) + Grdoc(jj,ii) ) / dble(Lq)
             enddo
         enddo
 
