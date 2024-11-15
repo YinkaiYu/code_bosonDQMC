@@ -286,7 +286,7 @@ contains
         enddo
 
         filek = 'den_updo'
-        call this%write_k(correlation_updo, filek, indexzero, no1, no2 )
+        call this%write_k(correlation_updo, filek, indexzero )
 
         return
     end subroutine m_write_obs_equal
