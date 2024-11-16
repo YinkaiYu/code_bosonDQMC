@@ -7,7 +7,7 @@ module ObserEqual_mod
         complex(kind=8), dimension(:,:,:), allocatable  :: den_corr_up, den_corr_do
         complex(kind=8), dimension(:), allocatable      :: den_corr_updo
         real(kind=8)                                    :: density_up,  density_do
-        real(kind=8)                                    :: kinetic, doubleOcc
+        real(kind=8)                                    :: kinetic, doubleOcc, squareOcc
     contains
         procedure :: make   => Obs_equal_make
         procedure :: reset  => Obs_equal_reset
@@ -38,6 +38,7 @@ contains
         this%density_do  = 0.d0
         this%kinetic     = 0.d0
         this%doubleOcc   = 0.d0
+        this%squareOcc   = 0.d0
         return
     end subroutine Obs_equal_reset
     
@@ -52,6 +53,7 @@ contains
         this%density_do  = this%density_do  * znorm
         this%kinetic     = this%kinetic     * znorm
         this%doubleOcc   = this%doubleOcc   * znorm
+        this%squareOcc   = this%squareOcc   * znorm
         this%den_corr_updo = this%den_corr_updo * znorm
         return
     end subroutine Obs_equal_ave
@@ -76,6 +78,7 @@ contains
             this%density_up = this%density_up + real( Grupc(ii,ii) ) / dble(Lq)
             this%density_do = this%density_do + real( Grdoc(ii,ii) ) / dble(Lq)
             this%doubleOcc  = this%doubleOcc  + real( Grupc(ii,ii) * Grdoc(ii,ii) ) / dble(Lq)
+            this%squareOcc  = this%squareOcc  + real( Grupc(ii,ii) * Grupc(ii,ii) + Grdoc(ii,ii) * Grdoc(ii,ii) ) / dble(Lq)
         enddo
 
         do i = 1, Lq
@@ -87,18 +90,8 @@ contains
                         jj = Latt%inv_dim_list(j, no2)
                         this%den_corr_up(imj, no1, no2) = this%den_corr_up(imj, no1, no2) + ( Grupc(ii,ii) * Grupc(jj,jj) + Grupc(ii,jj) * Grup(ii,jj) ) / dcmplx(dble(Lq), 0.d0)
                         this%den_corr_do(imj, no1, no2) = this%den_corr_do(imj, no1, no2) + ( Grdoc(ii,ii) * Grdoc(jj,jj) + Grdoc(ii,jj) * Grdo(ii,jj) ) / dcmplx(dble(Lq), 0.d0)
+                        this%den_corr_updo(imj) = this%den_corr_updo(imj) + ( Grupc(ii,ii) * Grdoc(jj,jj) ) / dcmplx(dble(Lq), 0.d0)
                     enddo
-                enddo
-            enddo
-        enddo
-
-        do i = 1, Lq
-            do j = 1, Lq
-                imj = Latt%imj(i, j)
-                do no = 1, Norb
-                    ii = Latt%inv_dim_list(i, no)
-                    jj = Latt%inv_dim_list(j, no)
-                    this%den_corr_updo(imj) = this%den_corr_updo(imj) + ( Grupc(ii,ii) * Grdoc(ii,ii) ) / dcmplx(dble(Lq), 0.d0)
                 enddo
             enddo
         enddo
