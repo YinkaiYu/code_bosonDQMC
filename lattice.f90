@@ -118,9 +118,8 @@ contains
                 iit = Latt%inv_dimt_list(ii, nt)
                 Latt%LT_bonds(iit, 0) = iit
                 Latt%LT_bonds(iit, 1) = Latt%inv_dimt_list(Latt%L_bonds(ii, 1), nt)
-                Latt%LT_bonds(iit, 2) = Latt%inv_dimt_list(Latt%L_bonds(ii, 2), nt)
-                Latt%LT_bonds(iit, 3) = Latt%inv_dimt_list(ii, npbc(nt+1, Ltrot))
-                Latt%LT_bonds(iit, 4) = Latt%inv_dimt_list(ii, npbc(nt-1, Ltrot))
+                Latt%LT_bonds(iit, 2) = Latt%inv_dimt_list(ii, npbc(nt+1, Ltrot))
+                Latt%LT_bonds(iit, 3) = Latt%inv_dimt_list(ii, npbc(nt-1, Ltrot))
             enddo
         enddo
 	    return

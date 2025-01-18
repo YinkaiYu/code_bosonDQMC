@@ -6,7 +6,7 @@ module CalcBasic ! Global parameters
     real(kind=8),           parameter           :: PI = acos(-1.d0)
     real(kind=8),           parameter           :: upbound = 1.0d+200
 ! lattice parameters
-    integer,                parameter           :: Norb  = 3  ! orbital/sublattice A,B,C in kagome lattice
+    integer,                parameter           :: Norb  = 1  ! 1d chain
     integer,                parameter           :: Nsub  = 1  ! 1d chain
     integer,                parameter           :: Nbond = 1  ! 1d chain
     integer,                parameter           :: Naux  = 2  ! flavor number of auxiliary field, respectively for U1 term and U2 term
