@@ -7,10 +7,10 @@ module CalcBasic ! Global parameters
     real(kind=8),           parameter           :: upbound = 1.0d+200
 ! lattice parameters
     integer,                parameter           :: Norb  = 3  ! orbital/sublattice A,B,C in kagome lattice
-    integer,                parameter           :: Nsub  = 3  ! sublattice for observables calculation; the same as Norb
-    integer,                parameter           :: Nbond = 2  ! bonds per site: A->B/C, B->C/A, C->A/B
+    integer,                parameter           :: Nsub  = 1  ! 1d chain
+    integer,                parameter           :: Nbond = 1  ! 1d chain
     integer,                parameter           :: Naux  = 2  ! flavor number of auxiliary field, respectively for U1 term and U2 term
-    integer,                public              :: Nlx, Nly, NlxTherm, NlyTherm
+    integer,                public              :: Nlx, Nly, NlxTherm, NlyTherm ! input nly=1
     integer,                public              :: Lq, LqTherm
     integer,                public              :: Ndim, NdimTherm
     real(kind=8),           public              :: Dtau
