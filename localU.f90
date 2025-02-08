@@ -56,7 +56,7 @@ contains
         ratio_exp = Op_U%ratio_gaussian
         ratio_det = dcmplx(1.d0,0.d0) + Op_U%Delta * ( dcmplx(1.d0,0.d0) - Gr(ii,ii) )
         ratio_det = dcmplx(1.d0,0.d0) / ratio_det
-        ratio_abs = abs(ratio_exp * ratio_det)
+        ratio_abs = abs(ratio_exp * ratio_det * dconjg(ratio_det))
 ! Upgrade Green's function and phi
         random = ranf(iseed)
         if (ratio_abs .gt. random) then
