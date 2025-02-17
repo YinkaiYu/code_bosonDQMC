@@ -275,6 +275,22 @@ contains
         open(unit=80, file='squareOcc', status='unknown', action="write", position="append")
         write(80,*) Obs%squareOcc
         close(80)
+            
+        open(unit=80, file='num_up', status='unknown', action="write", position="append")
+        write(80,*) Obs%num_up
+        close(80)
+            
+        open(unit=80, file='num_do', status='unknown', action="write", position="append")
+        write(80,*) Obs%num_do
+        close(80)
+            
+        open(unit=80, file='numsquare_up', status='unknown', action="write", position="append")
+        write(80,*) Obs%numsquare_up
+        close(80)
+            
+        open(unit=80, file='numsquare_do', status='unknown', action="write", position="append")
+        write(80,*) Obs%numsquare_do
+        close(80)
 
         call Fourier_R_to_K(Obs%den_corr_up, correlation_up, Latt)
         call Fourier_R_to_K(Obs%den_corr_do, correlation_do, Latt)
@@ -307,6 +323,8 @@ contains
         real(kind=8), dimension(Lq, Nbond) :: Collect2
         real(kind=8), dimension(Naux, Lq) :: Collect2prime
         real(kind=8) :: Collect0, Collect1prime(Nbond)
+        complex(kind=8), dimension(Lq) :: Collect1cmplx
+        complex(kind=8) :: Collect3(Lq, Norb, Norb)
         integer :: N
         
         Collect0 = 0.d0
@@ -316,6 +334,50 @@ contains
         Collect0 = 0.d0
         call MPI_REDUCE(Obs%density_do, Collect0, 1, MPI_real8, MPI_SUM, 0, MPI_COMM_WORLD, IERR)
         if (IRANK == 0) Obs%density_do = Collect0/dble(ISIZE)
+        
+        Collect0 = 0.d0
+        call MPI_REDUCE(Obs%kinetic, Collect0, 1, MPI_real8, MPI_SUM, 0, MPI_COMM_WORLD, IERR)
+        if (IRANK == 0) Obs%kinetic = Collect0/dble(ISIZE)
+        
+        Collect0 = 0.d0
+        call MPI_REDUCE(Obs%doubleOcc, Collect0, 1, MPI_real8, MPI_SUM, 0, MPI_COMM_WORLD, IERR)
+        if (IRANK == 0) Obs%doubleOcc = Collect0/dble(ISIZE)
+        
+        Collect0 = 0.d0
+        call MPI_REDUCE(Obs%squareOcc, Collect0, 1, MPI_real8, MPI_SUM, 0, MPI_COMM_WORLD, IERR)
+        if (IRANK == 0) Obs%squareOcc = Collect0/dble(ISIZE)
+        
+        Collect0 = 0.d0
+        call MPI_REDUCE(Obs%num_up, Collect0, 1, MPI_real8, MPI_SUM, 0, MPI_COMM_WORLD, IERR)
+        if (IRANK == 0) Obs%num_up = Collect0/dble(ISIZE)
+
+        Collect0 = 0.d0
+        call MPI_REDUCE(Obs%num_do, Collect0, 1, MPI_real8, MPI_SUM, 0, MPI_COMM_WORLD, IERR)
+        if (IRANK == 0) Obs%num_do = Collect0/dble(ISIZE)
+        
+        Collect0 = 0.d0
+        call MPI_REDUCE(Obs%numsquare_up, Collect0, 1, MPI_real8, MPI_SUM, 0, MPI_COMM_WORLD, IERR)
+        if (IRANK == 0) Obs%numsquare_up = Collect0/dble(ISIZE)
+
+        Collect0 = 0.d0
+        call MPI_REDUCE(Obs%numsquare_do, Collect0, 1, MPI_real8, MPI_SUM, 0, MPI_COMM_WORLD, IERR)
+        if (IRANK == 0) Obs%numsquare_do = Collect0/dble(ISIZE)
+
+        N = Lq * Norb * Norb
+
+        Collect3 = dcmplx(0.d0, 0.d0)
+        call MPI_REDUCE(Obs%den_corr_up, Collect3, N, MPI_complex16, MPI_SUM, 0, MPI_COMM_WORLD, IERR)
+        if (IRANK == 0) Obs%den_corr_up = Collect3/dcmplx(dble(ISIZE),0.d0)
+
+        Collect3 = dcmplx(0.d0, 0.d0)
+        call MPI_REDUCE(Obs%den_corr_do, Collect3, N, MPI_complex16, MPI_SUM, 0, MPI_COMM_WORLD, IERR)
+        if (IRANK == 0) Obs%den_corr_do = Collect3/dcmplx(dble(ISIZE),0.d0)
+
+        N = Lq
+
+        Collect1cmplx = dcmplx(0.d0, 0.d0)
+        call MPI_REDUCE(Obs%den_corr_updo, Collect1cmplx, N, MPI_complex16, MPI_SUM, 0, MPI_COMM_WORLD, IERR)
+        if (IRANK == 0) Obs%den_corr_updo = Collect1cmplx/dcmplx(dble(ISIZE),0.d0)
 
         if (IRANK == 0) call this%write_obs_equal(Obs)
         return

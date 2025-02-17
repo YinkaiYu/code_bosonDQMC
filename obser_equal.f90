@@ -8,6 +8,7 @@ module ObserEqual_mod
         complex(kind=8), dimension(:), allocatable      :: den_corr_updo
         real(kind=8)                                    :: density_up,  density_do
         real(kind=8)                                    :: kinetic, doubleOcc, squareOcc
+        real(kind=8)                                    :: num_up, num_do, numsquare_up, numsquare_do
     contains
         procedure :: make   => Obs_equal_make
         procedure :: reset  => Obs_equal_reset
@@ -39,6 +40,10 @@ contains
         this%kinetic     = 0.d0
         this%doubleOcc   = 0.d0
         this%squareOcc   = 0.d0
+        this%num_up      = 0.d0
+        this%num_do      = 0.d0
+        this%numsquare_up = 0.d0
+        this%numsquare_do = 0.d0
         return
     end subroutine Obs_equal_reset
     
@@ -55,6 +60,10 @@ contains
         this%doubleOcc   = this%doubleOcc   * znorm
         this%squareOcc   = this%squareOcc   * znorm
         this%den_corr_updo = this%den_corr_updo * znorm
+        this%num_up      = this%num_up * znorm
+        this%num_do      = this%num_do * znorm
+        this%numsquare_up = this%numsquare_up * znorm
+        this%numsquare_do = this%numsquare_do * znorm
         return
     end subroutine Obs_equal_ave
     
@@ -79,6 +88,15 @@ contains
             this%density_do = this%density_do + real( Grdoc(ii,ii) ) / dble(Lq)
             this%doubleOcc  = this%doubleOcc  + real( Grupc(ii,ii) * Grdoc(ii,ii) ) / dble(Lq)
             this%squareOcc  = this%squareOcc  + real( Grupc(ii,ii) * Grupc(ii,ii) + Grdoc(ii,ii) * Grdoc(ii,ii) ) / dble(Lq)
+            this%num_up = this%num_up + real( Grupc(ii,ii) ) 
+            this%num_do = this%num_do + real( Grdoc(ii,ii) ) 
+        enddo
+
+        do ii = 1, Ndim
+            do jj = 1, Ndim
+                this%numsquare_up = this%numsquare_up + real( Grupc(ii,ii) * Grupc(jj,jj) + Grupc(ii,jj) * Grup(ii,jj) )
+                this%numsquare_do = this%numsquare_do + real( Grdoc(ii,ii) * Grdoc(jj,jj) + Grdoc(ii,jj) * Grdo(ii,jj) )
+            enddo
         enddo
 
         do i = 1, Lq
