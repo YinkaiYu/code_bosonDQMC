@@ -45,8 +45,8 @@ contains
         do ii = 1, Ndim
             do nb = 1, Nbond
                 jj = Latt%L_bonds(ii, nb)
-                HamT(ii,jj) = Z
-                HamT(jj,ii) = dconjg(Z)
+                HamT(ii,jj) = HamT(ii,jj) + Z
+                HamT(jj,ii) = HamT(jj,ii) + dconjg(Z)
             enddo
         enddo
 
