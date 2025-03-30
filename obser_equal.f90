@@ -4,7 +4,7 @@ module ObserEqual_mod
     implicit none
     
     type, public :: ObserEqual
-        complex(kind=8), dimension(:,:,:), allocatable  :: den_corr_up, den_corr_do
+        complex(kind=8), dimension(:,:,:), allocatable  :: den_corr_up, den_corr_do, single_corr
         complex(kind=8), dimension(:), allocatable      :: den_corr_updo
         real(kind=8)                                    :: density_up,  density_do
         real(kind=8)                                    :: kinetic, doubleOcc, squareOcc
@@ -20,13 +20,13 @@ module ObserEqual_mod
 contains
     subroutine Obs_equal_make(this)
         class(ObserEqual), intent(inout) :: this
-        allocate( this%den_corr_up(Lq, Norb, Norb), this%den_corr_do(Lq, Norb, Norb), this%den_corr_updo(Lq) )
+        allocate( this%den_corr_up(Lq, Norb, Norb), this%den_corr_do(Lq, Norb, Norb), this%single_corr(Lq, Norb, Norb), this%den_corr_updo(Lq) )
         return
     end subroutine Obs_equal_make
     
     subroutine Obs_equal_clear(this)
         type(ObserEqual), intent(inout) :: this
-        deallocate( this%den_corr_up, this%den_corr_do, this%den_corr_updo )
+        deallocate( this%den_corr_up, this%den_corr_do, this%den_corr_do, this%den_corr_updo )
         return
     end subroutine Obs_equal_clear
     
@@ -34,6 +34,7 @@ contains
         class(ObserEqual), intent(inout) :: this
         this%den_corr_up   = dcmplx(0.d0,0.d0)
         this%den_corr_do   = dcmplx(0.d0,0.d0)
+        this%single_corr   = dcmplx(0.d0,0.d0)
         this%den_corr_updo = dcmplx(0.d0,0.d0)
         this%density_up  = 0.d0
         this%density_do  = 0.d0
@@ -54,6 +55,7 @@ contains
         znorm = 1.d0 / dble(Nobs)
         this%den_corr_up = this%den_corr_up * znorm
         this%den_corr_do = this%den_corr_do * znorm
+        this%single_corr = this%single_corr * znorm
         this%density_up  = this%density_up  * znorm
         this%density_do  = this%density_do  * znorm
         this%kinetic     = this%kinetic     * znorm
@@ -109,6 +111,7 @@ contains
                         this%den_corr_up(imj, no1, no2) = this%den_corr_up(imj, no1, no2) + ( Grupc(ii,ii) * Grupc(jj,jj) + Grupc(ii,jj) * Grup(ii,jj) ) / dcmplx(dble(Lq), 0.d0)
                         this%den_corr_do(imj, no1, no2) = this%den_corr_do(imj, no1, no2) + ( Grdoc(ii,ii) * Grdoc(jj,jj) + Grdoc(ii,jj) * Grdo(ii,jj) ) / dcmplx(dble(Lq), 0.d0)
                         this%den_corr_updo(imj) = this%den_corr_updo(imj) + ( Grupc(ii,ii) * Grdoc(jj,jj) ) / dcmplx(dble(Lq), 0.d0)
+                        this%single_corr(imj, no1, no2) = this%single_corr(imj, no1, no2) + Grupc(ii,jj) / dcmplx(dble(Lq), 0.d0)
                     enddo
                 enddo
             enddo

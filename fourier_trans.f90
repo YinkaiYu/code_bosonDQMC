@@ -11,6 +11,8 @@ module FourierTrans_mod
         generic :: write_real => m_write_real_1
         generic :: write_real => m_write_real_2
         
+        procedure, private, nopass :: write_cmplx => m_write_cmplx_3
+        
         procedure, private, nopass :: m_write_reciprocal_1
         procedure, private, nopass :: m_write_reciprocal_2
         procedure, private, nopass :: m_write_reciprocal_3
@@ -84,6 +86,29 @@ contains
         close(20)
         return
     end subroutine m_write_real_2
+    
+    subroutine m_write_cmplx_3(gr, filek)
+        complex(kind=8), dimension(Lq, Norb, Norb), intent(in) :: gr
+        character(len=*), intent(in) :: filek
+        integer :: nr, no1, no2
+        open(unit=20, file=filek, status='unknown', action="write", position="append")
+        do no2 = 1, Norb
+            do no1 = 1, Norb
+                do nr = 1, Lq
+                    write(20, '(1X,E16.8)', advance='no') real(gr(nr, no1, no2))
+                enddo
+            enddo
+        enddo
+        do no2 = 1, Norb
+            do no1 = 1, Norb
+                do nr = 1, Lq
+                    write(20, '(1X,E16.8)', advance='no') aimag(gr(nr, no1, no2))
+                enddo
+            enddo
+        enddo
+        close(20)
+        return
+    end subroutine m_write_cmplx_3
    
     subroutine m_write_reciprocal_1(gk, filek)
         complex(kind=8), dimension(Lq), intent(in) :: gk
@@ -308,6 +333,9 @@ contains
         filek = 'den_updo'
         call this%write_k(correlation_updo, filek, indexzero )
 
+        ! filek = 'green'
+        ! call this%write_cmplx(Obs%single_corr, filek)
+
         return
     end subroutine m_write_obs_equal
 
@@ -372,6 +400,10 @@ contains
         Collect3 = dcmplx(0.d0, 0.d0)
         call MPI_REDUCE(Obs%den_corr_do, Collect3, N, MPI_complex16, MPI_SUM, 0, MPI_COMM_WORLD, IERR)
         if (IRANK == 0) Obs%den_corr_do = Collect3/dcmplx(dble(ISIZE),0.d0)
+
+        Collect3 = dcmplx(0.d0, 0.d0)
+        call MPI_REDUCE(Obs%single_corr, Collect3, N, MPI_complex16, MPI_SUM, 0, MPI_COMM_WORLD, IERR)
+        if (IRANK == 0) Obs%single_corr = Collect3/dcmplx(dble(ISIZE),0.d0)
 
         N = Lq
 
