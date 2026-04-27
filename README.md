@@ -29,13 +29,12 @@ Run the default example:
 make run-example
 ```
 
-This calls:
+This delegates to `scripts/run_local.sh`, which builds the executable, changes into
+`runs/examples/triangle_3x2`, and runs:
 
 ```bash
-mpirun -np 1 build/bosonDQMC.out
+mpirun -np 1 <repo>/build/bosonDQMC.out
 ```
-
-from inside `runs/examples/triangle_3x2`.
 
 Run another directory:
 
