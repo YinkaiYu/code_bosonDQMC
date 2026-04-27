@@ -5,7 +5,7 @@ module DQMC_Model_mod
     implicit none
     
     public
-    type(kagomeLattice), allocatable    :: Latt
+    type(triangularLattice), allocatable :: Latt
     type(OperatorKinetic), allocatable  :: Op_T
     type(OperatorHubbard)               :: Op_U1,   Op_U2
     type(AuxConf), allocatable          :: Conf

@@ -28,7 +28,7 @@ contains
     subroutine conf_in(Conf, iseed, Latt)
         class(AuxConf), intent(inout) :: Conf
         integer, intent(out) :: iseed
-        class(kagomeLattice), intent(in) :: Latt
+        class(triangularLattice), intent(in) :: Latt
 ! Local: 
         real(kind=8), dimension(Naux, NdimTherm, LtrotTherm) :: phi_list_therm
         
@@ -149,7 +149,7 @@ contains
     subroutine conf_transfer(phi_list, phi_list_therm, Latt)
         real(kind=8), dimension(Naux, Lq, Ltrot), intent(inout) :: phi_list
         real(kind=8), dimension(Naux, NdimTherm, LtrotTherm), intent(in) :: phi_list_therm
-        class(kagomeLattice), intent(in) :: Latt
+        class(triangularLattice), intent(in) :: Latt
         integer :: nt, ntt, nx, ny, ii, iit, nc, no, n
         integer :: cell_list_therm(LqTherm, 1:2), inv_cell_list_therm(NlxTherm, NlyTherm)
         integer :: dim_list_therm(NdimTherm, 1:2), inv_dim_list_therm(LqTherm, Norb)

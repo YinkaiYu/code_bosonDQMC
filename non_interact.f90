@@ -33,7 +33,7 @@ contains
     subroutine def_hamT(HamT, Latt)
 ! Arguments: 
         complex(kind=8), dimension(Ndim, Ndim), intent(inout) :: HamT
-        class(kagomeLattice), intent(in) :: Latt
+        class(triangularLattice), intent(in) :: Latt
 ! Local: 
         complex(kind=8) :: Z
         integer :: ii, jj, nb
@@ -75,7 +75,7 @@ contains
         use MyMats
 ! Arguments: 
         class(OperatorKinetic), intent(inout) :: this
-        class(kagomeLattice), intent(in) :: Latt
+        class(triangularLattice), intent(in) :: Latt
 ! Local: 
 !        real(kind=8) :: degen, en_free
         integer :: i, nl, nr

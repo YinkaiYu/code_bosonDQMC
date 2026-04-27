@@ -68,7 +68,7 @@ contains
 ! Arguments: 
         class(OperatorHubbard), intent(inout) :: this
         complex(kind=8), dimension(Ndim, Ndim), intent(inout) :: Mat
-        class(kagomeLattice), intent(in) :: Latt
+        class(triangularLattice), intent(in) :: Latt
         real(kind=8), intent(in) :: phi
         integer, intent(in) :: ii, nflag
 ! Local: 
@@ -85,7 +85,7 @@ contains
 ! Arguments: 
         class(OperatorHubbard), intent(inout) :: this
         complex(kind=8), dimension(Ndim, Ndim), intent(inout) :: Mat
-        class(kagomeLattice), intent(in) :: Latt
+        class(triangularLattice), intent(in) :: Latt
         real(kind=8), intent(in) :: phi
         integer, intent(in) :: jj, nflag
 ! Local: 

@@ -6,9 +6,9 @@ module CalcBasic ! Global parameters
     real(kind=8),           parameter           :: PI = acos(-1.d0)
     real(kind=8),           parameter           :: upbound = 1.0d+200
 ! lattice parameters
-    integer,                parameter           :: Norb  = 1  ! triangle lattice
-    integer,                parameter           :: Nsub  = 1  ! triangle lattice
-    integer,                parameter           :: Nbond = 3  ! triangle lattice
+    integer,                parameter           :: Norb  = 1  ! triangular lattice
+    integer,                parameter           :: Nsub  = 1  ! triangular lattice
+    integer,                parameter           :: Nbond = 3  ! triangular lattice
     integer,                parameter           :: Naux  = 2  ! flavor number of auxiliary field, respectively for U1 term and U2 term
     integer,                public              :: Nlx, Nly, NlxTherm, NlyTherm
     integer,                public              :: Lq, LqTherm
@@ -134,7 +134,7 @@ contains
         if (IRANK == 0) then
             open (unit=50, file='info.txt', status='unknown', action="write")
             write(50,*) '========================='
-            write(50,*) 'DQMC for boson Hubbard on kagome lattice'
+            write(50,*) 'DQMC for boson Hubbard on triangular lattice'
             write(50,*) 'Linear lengh Lx                                :', Nlx
             write(50,*) 'Linear lengh Ly                                :', Nly
             write(50,*) 'Hopping t                                      :', RT
