@@ -1,0 +1,39 @@
+{
+  "case": "triangle_3x2_beta6_mu-2.5_u1_0_u2_1",
+  "source": "Reference values copied from temp/benchmark.txt; default benchmark uses fixture data to validate comparison semantics.",
+  "parameters": {
+    "Lx": 3,
+    "Ly": 2,
+    "t": 1.0,
+    "U1": 0.0,
+    "U2": 1.0,
+    "beta": 6.0,
+    "mu": -2.5
+  },
+  "normalization": {
+    "ed_total_NE": "ED reports total particle number NE_b + NE_c.",
+    "dqmc_total_NE": "DQMC total particle number is num_up + num_do.",
+    "ed_total_kinetic": "ED reports total kinetic expectation.",
+    "dqmc_kinetic": "DQMC file kinetic is accumulated with division by Lq in Obs_equal_calc, so compare kinetic * Lq to ED total kinetic."
+  },
+  "observables": {
+    "total_NE": {
+      "value": 0.0008330248173669302,
+      "atol": 1e-12,
+      "rtol": 0.0,
+      "dqmc": {
+        "operation": "sum_last",
+        "files": ["num_up", "num_do"]
+      }
+    },
+    "total_kinetic": {
+      "value": -0.001659465125418983,
+      "atol": 1e-12,
+      "rtol": 0.0,
+      "dqmc": {
+        "operation": "last_times_lq",
+        "files": ["kinetic"]
+      }
+    }
+  }
+}
