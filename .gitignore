@@ -1,1 +1,6 @@
 .codex
+*.o
+*.mod
+*.lst
+*.opt-report
+bosonDQMC.out
