@@ -53,13 +53,28 @@ sbatch -p fat6348 --job-name yyk_triangle_fat scripts/sbatch_triangle.sh runs/ex
 
 ## Benchmark
 
-Run the fast comparison against checked-in fixture data:
+Run the strict live DQMC benchmark suite:
 
 ```bash
 make benchmark
 ```
 
-The default benchmark does not recompute ED. It validates the comparison semantics for total particle number and total kinetic energy.
+`make benchmark` is an alias for the live suite. `make benchmark-dqmc` is kept as the explicit DQMC target name.
+
+This runs `mpirun -np 1` through the local helper in fresh temporary directories. The default live suite includes:
+
+- one free-boson `U1=U2=0` analytic case
+- the four ED reference cases recorded in `temp/benchmark.txt`
+
+All live suite cases use `dtau = beta / Ltrot = 0.01`; the interacting cases use `Nbin = 100000`. On the current WSL workstation with `MPI_NP=1`, the full suite was observed at `real 604.50` seconds, about 10 minutes 5 seconds; allow 15 minutes or more under load. Do not reduce `Ltrot` or `Nbin` just to make a substantive algorithm benchmark faster.
+
+For a fast live benchmark, run only the no-interaction `U1=U2=0` DQMC case against the analytic reference:
+
+```bash
+make benchmark-fast
+```
+
+For a fast check of JSON parsing, fixture normalization, and comparison-script behavior without running DQMC, use `make check-fixtures`. This is not physics validation and must not replace the live suite for algorithm changes.
 
 Optional ED recomputation:
 

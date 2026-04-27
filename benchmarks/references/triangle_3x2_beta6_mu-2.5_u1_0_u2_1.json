@@ -1,6 +1,7 @@
 {
   "case": "triangle_3x2_beta6_mu-2.5_u1_0_u2_1",
-  "source": "Reference values copied from temp/benchmark.txt; default benchmark uses fixture data to validate comparison semantics.",
+  "source": "Reference values copied from temp/benchmark.txt; default benchmark uses fixture data to validate DQMC-to-ED normalization semantics.",
+  "dqmc_fixture": "benchmarks/fixtures/triangle_3x2_beta6_mu-2.5_u1_0_u2_1_mc_outputs",
   "parameters": {
     "Lx": 3,
     "Ly": 2,
@@ -11,10 +12,14 @@
     "mu": -2.5
   },
   "normalization": {
-    "ed_total_NE": "ED reports total particle number NE_b + NE_c.",
+    "ed_total_NE": "ED script accumulates NE = NE_b + NE_c.",
     "dqmc_total_NE": "DQMC total particle number is num_up + num_do.",
-    "ed_total_kinetic": "ED reports total kinetic expectation.",
-    "dqmc_kinetic": "DQMC file kinetic is accumulated with division by Lq in Obs_equal_calc, so compare kinetic * Lq to ED total kinetic."
+    "ed_total_kinetic": "ED kinetic operator includes both b and c hopping layers.",
+    "dqmc_kinetic": "DQMC file kinetic includes both flavors and is divided by Lq, so compare kinetic * Lq."
+  },
+  "ed_tail_contribution": {
+    "total_NE": 1.73193202629138e-07,
+    "total_kinetic": -3.351464850228854e-07
   },
   "observables": {
     "total_NE": {

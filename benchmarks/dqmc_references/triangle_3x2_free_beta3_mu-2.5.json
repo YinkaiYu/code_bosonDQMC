@@ -1,0 +1,44 @@
+{
+  "case": "triangle_3x2_free_beta3_mu-2.5",
+  "source": "Free-boson analytic reference for U1=U2=0. This live-suite case verifies executable and observable normalization without Monte Carlo convergence.",
+  "parameters": {
+    "Lx": 3,
+    "Ly": 2,
+    "t": 1.0,
+    "U1": 0.0,
+    "U2": 0.0,
+    "beta": 3.0,
+    "mu": -2.5,
+    "Ltrot": 300,
+    "Nbin": 1,
+    "Nsweep": 1
+  },
+  "normalization": {
+    "analytic_total_NE": "Two flavors of free bosons with single-particle energies epsilon_k - mu = [0.5, 0.5, 0.5, 2.5, 2.5, 8.5].",
+    "dqmc_total_NE": "DQMC total particle number is num_up + num_do.",
+    "analytic_total_kinetic": "Kinetic operator excludes the -mu diagonal shift and includes both flavors.",
+    "dqmc_kinetic": "DQMC file kinetic includes both flavors and is divided by Lq, so compare kinetic * Lq."
+  },
+  "observables": {
+    "total_NE": {
+      "value": 1.725515062517064,
+      "atol": 1e-12,
+      "rtol": 0.0,
+      "dqmc": {
+        "operation": "sum_last",
+        "files": ["num_up", "num_do"],
+        "min_samples": 1
+      }
+    },
+    "total_kinetic": {
+      "value": -3.446603001365339,
+      "atol": 1e-12,
+      "rtol": 0.0,
+      "dqmc": {
+        "operation": "last_times_lq",
+        "files": ["kinetic"],
+        "min_samples": 1
+      }
+    }
+  }
+}

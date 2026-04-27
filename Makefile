@@ -36,12 +36,13 @@ else ifneq ($(GFORTRAN),)
   FC_CMD := $(GFORTRAN)
 endif
 
-ifneq ($(filter clean,$(MAKECMDGOALS)),clean)
-  ifneq ($(filter help,$(MAKECMDGOALS)),help)
+GOALS_NEEDING_FORTRAN := all build run-example benchmark benchmark-fast benchmark-dqmc print-config
+REQUESTED_GOALS := $(if $(MAKECMDGOALS),$(MAKECMDGOALS),all)
+
+ifneq ($(filter $(GOALS_NEEDING_FORTRAN),$(REQUESTED_GOALS)),)
     ifeq ($(strip $(FC_CMD)),)
       $(error No Fortran compiler found. Set FC explicitly, for example: make FC=mpiifort)
     endif
-  endif
 endif
 
 SRC_DIR := src
@@ -56,8 +57,13 @@ LDFLAGS ?= -mkl
 PYTHON ?= python3
 MPI_NP ?= 1
 RUN_DIR ?= runs/examples/triangle_3x2
-BENCHMARK_RUN_DIR ?= benchmarks/fixtures/triangle_3x2_mc_outputs
-BENCHMARK_REFERENCE ?= benchmarks/references/triangle_3x2.json
+BENCHMARK_RUN_DIR ?=
+BENCHMARK_REFERENCE ?= benchmarks/references
+DQMC_FAST_BENCHMARK_INPUT_DIR ?= runs/benchmarks/triangle_3x2_free_beta3_mu-2.5
+DQMC_FAST_BENCHMARK_REFERENCE ?= benchmarks/dqmc_references/triangle_3x2_free_beta3_mu-2.5.json
+DQMC_BENCHMARK_SUITE ?= benchmarks/dqmc_suite.json
+DQMC_BENCHMARK_INPUT_DIR ?=
+DQMC_BENCHMARK_REFERENCE ?=
 
 ifneq (,$(findstring gfortran,$(FC_CMD)))
   MOD_FLAG ?= -J$(MOD_DIR)
@@ -91,7 +97,7 @@ SOURCES := \
 
 OBJECTS := $(addprefix $(OBJ_DIR)/,$(SOURCES:.f90=.o))
 
-.PHONY: all build clean print-config run-example benchmark benchmark-ed help
+.PHONY: all build clean print-config run-example benchmark benchmark-fast benchmark-dqmc check-fixtures benchmark-ed help
 
 all: build
 
@@ -116,12 +122,29 @@ print-config:
 	@echo "RUN_DIR=$(RUN_DIR)"
 	@echo "BENCHMARK_RUN_DIR=$(BENCHMARK_RUN_DIR)"
 	@echo "BENCHMARK_REFERENCE=$(BENCHMARK_REFERENCE)"
+	@echo "DQMC_FAST_BENCHMARK_INPUT_DIR=$(DQMC_FAST_BENCHMARK_INPUT_DIR)"
+	@echo "DQMC_FAST_BENCHMARK_REFERENCE=$(DQMC_FAST_BENCHMARK_REFERENCE)"
+	@echo "DQMC_BENCHMARK_SUITE=$(DQMC_BENCHMARK_SUITE)"
+	@echo "DQMC_BENCHMARK_INPUT_DIR=$(DQMC_BENCHMARK_INPUT_DIR)"
+	@echo "DQMC_BENCHMARK_REFERENCE=$(DQMC_BENCHMARK_REFERENCE)"
 
 run-example: build
 	bash scripts/run_local.sh $(RUN_DIR) $(MPI_NP)
 
-benchmark:
-	$(PYTHON) benchmarks/compare.py --reference $(BENCHMARK_REFERENCE) --run-dir $(BENCHMARK_RUN_DIR)
+benchmark: benchmark-dqmc
+
+benchmark-fast: build
+	PYTHON=$(PYTHON) bash scripts/run_dqmc_benchmark.sh $(DQMC_FAST_BENCHMARK_INPUT_DIR) $(DQMC_FAST_BENCHMARK_REFERENCE) $(MPI_NP)
+
+check-fixtures:
+	$(PYTHON) benchmarks/compare.py --reference $(BENCHMARK_REFERENCE) $(if $(strip $(BENCHMARK_RUN_DIR)),--run-dir $(BENCHMARK_RUN_DIR),)
+
+benchmark-dqmc: build
+ifneq ($(strip $(DQMC_BENCHMARK_INPUT_DIR)$(DQMC_BENCHMARK_REFERENCE)),)
+	PYTHON=$(PYTHON) bash scripts/run_dqmc_benchmark.sh $(DQMC_BENCHMARK_INPUT_DIR) $(DQMC_BENCHMARK_REFERENCE) $(MPI_NP)
+else
+	$(PYTHON) benchmarks/run_dqmc_suite.py --suite $(DQMC_BENCHMARK_SUITE) --np $(MPI_NP) --python $(PYTHON)
+endif
 
 benchmark-ed:
 	cd benchmarks/ed && cp params_triangle_3x2.txt params.txt && $(PYTHON) EDtriangle_symm_NEblock.py
@@ -134,7 +157,10 @@ help:
 	@echo "Targets:"
 	@echo "  make build          Build build/bosonDQMC.out"
 	@echo "  make run-example    Run the default example with mpirun"
-	@echo "  make benchmark      Compare fixture or run output to ED reference"
+	@echo "  make benchmark      Run the live DQMC-vs-ED benchmark suite"
+	@echo "  make benchmark-fast Run the fast U1=U2=0 live DQMC benchmark"
+	@echo "  make benchmark-dqmc Run the live DQMC-vs-ED benchmark suite"
+	@echo "  make check-fixtures Fast check of fixture/reference comparison semantics"
 	@echo "  make benchmark-ed   Optionally recompute ED reference in benchmarks/ed"
 	@echo "  make clean          Remove generated build artifacts"
 	@echo "  make print-config   Print compiler and path configuration"

@@ -16,6 +16,9 @@ make print-config
 make build
 make run-example
 make benchmark
+make benchmark-fast
+make benchmark-dqmc
+make check-fixtures
 make benchmark-ed
 make clean
 ```
@@ -51,10 +54,25 @@ bash scripts/run_local.sh path/to/run_dir 1
 Create:
 
 - `benchmarks/references/<case>.json`
-- optional fixture outputs under `benchmarks/fixtures/<case>_mc_outputs/`
+- fixture outputs under `benchmarks/fixtures/<case>_mc_outputs/`
 - optional ED params under `benchmarks/ed/params_<case>.txt`
 
-The reference JSON must document whether each expected value is total, per flavor, per site, or divided by `Lq`.
+The reference JSON must include `dqmc_fixture` and document whether each expected value is total, per flavor, per site, or divided by `Lq`. After adding a case, run:
+
+```bash
+python3 -m unittest benchmarks/test_compare.py -v
+make check-fixtures
+```
+
+For changes that substantively alter the DQMC algorithm, run the live benchmark:
+
+```bash
+make benchmark
+```
+
+`make benchmark` is an alias for `make benchmark-dqmc`. It uses fresh temporary run directories, so generated output from older runs cannot contaminate the comparison. The default suite is listed in `benchmarks/dqmc_suite.json` and includes one free analytic case plus all four ED reference cases from `temp/benchmark.txt`.
+
+All live suite cases use `dtau = beta / Ltrot = 0.01`. Interacting live cases use `Nbin = 100000` and are compared to ED with block-estimated standard errors of the Monte Carlo mean. On the current WSL workstation with `MPI_NP=1`, the full suite was observed at `real 604.50` seconds, about 10 minutes 5 seconds; budget at least 15 minutes and do not shorten `Ltrot` or `Nbin` unless the benchmark definition is being deliberately changed.
 
 ## Generated Files
 
@@ -64,4 +82,4 @@ Generated build files are under `build/` and removed by:
 make clean
 ```
 
-Generated run outputs inside `runs/**` are ignored by git. Fixture outputs under `benchmarks/fixtures/` are committed when they are intentionally used by `make benchmark`.
+Generated run outputs inside `runs/**` are ignored by git. Fixture outputs under `benchmarks/fixtures/` are committed when they are intentionally used by `make check-fixtures`.

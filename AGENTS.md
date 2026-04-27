@@ -74,7 +74,7 @@ total_NE_DQMC = last(num_up) + last(num_do)
 total_kinetic_DQMC = last(kinetic) * Lq
 ```
 
-The ED reference script reports total particle number and total kinetic expectation. The DQMC `kinetic` output is normalized by `Lq` in `src/obser_equal.f90`.
+The ED reference script accumulates `NE = NE_b + NE_c`, and its kinetic operator includes both flavor hopping layers. The DQMC `kinetic` output includes both flavors and is normalized by `Lq` in `src/obser_equal.f90`.
 
 ## Build And Benchmark Notes
 
@@ -86,7 +86,32 @@ Default benchmark:
 make benchmark
 ```
 
-This is a fast fixture comparison and must not recompute ED. Do not run:
+This is the strict live DQMC-vs-ED suite. It runs `benchmarks/dqmc_suite.json`: one free-boson analytic case and all four ED reference cases from `temp/benchmark.txt`. All live cases use `dtau = beta / Ltrot = 0.01`; interacting cases use `Nbin = 100000`.
+
+The fast benchmark is explicitly a no-interaction live DQMC run:
+
+```bash
+make benchmark-fast
+```
+
+It runs the `U1=U2=0` case and compares to an analytic reference. It is useful for quick executable and observable-normalization checks, but it does not replace the full live suite for algorithm changes.
+
+The fixture comparison is named `make check-fixtures`. It checks JSON parsing and DQMC-to-ED normalization semantics under `benchmarks/references/`, but it is not physics validation. When adding a fixture/reference case, add both a reference JSON and a fixture directory, then run:
+
+```bash
+python3 -m unittest benchmarks/test_compare.py -v
+make check-fixtures
+```
+
+Substantive DQMC algorithm changes must run the live benchmark:
+
+```bash
+make benchmark-dqmc
+```
+
+The live comparison reports `stderr` as the standard error of the Monte Carlo mean estimated from block means, not the raw-sample standard deviation. A live observable passes when it is within `stderr_tolerance` standard errors of the ED value, after the fixed DQMC-to-ED normalization conversion. On the current WSL workstation with `MPI_NP=1`, the full suite was observed at `real 604.50` seconds, about 10 minutes 5 seconds; budget at least 15 minutes.
+
+Do not run:
 
 ```bash
 make benchmark-ed
@@ -102,10 +127,10 @@ Before claiming a code change is complete, run the relevant verification command
 make print-config
 make build
 python3 -m py_compile benchmarks/compare.py benchmarks/ed/EDtriangle_symm_NEblock.py
-make benchmark
+make check-fixtures
 git diff --check
 ```
 
-Run `make run-example` when the change affects build, runtime scripts, input layout, or Fortran execution. If sandboxed MPI fails with socket permission errors, report that exact failure and rerun with approved elevated permissions if needed.
+Run `make benchmark` or `make benchmark-dqmc` for substantive algorithm changes. Run `make run-example` when the change affects build, runtime scripts, input layout, or Fortran execution. If sandboxed MPI fails with socket permission errors, report that exact failure and rerun with approved elevated permissions if needed.
 
 If compiler, MPI, external libraries, or Python ED dependencies are unavailable, report the exact command and failure. Do not claim success from partial verification.

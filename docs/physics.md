@@ -83,10 +83,10 @@ Grdoc = dconjg(transpose(Grdo)) - ZKRON
 
 ## Benchmark Normalization
 
-The ED reference script reports:
+The ED reference script loops over two-species fixed-`NE` blocks and reports:
 
 - total particle number `NE = NE_b + NE_c`
-- total kinetic expectation value
+- total kinetic expectation value from both flavor hopping layers
 
 The DQMC code writes:
 
@@ -101,4 +101,13 @@ total_NE_DQMC = last(num_up) + last(num_do)
 total_kinetic_DQMC = last(kinetic) * Lq
 ```
 
-Changing this conversion is a physics-level change and must be reflected in `benchmarks/references/*.json` and `benchmarks/README.md`.
+For real Monte Carlo runs, use sample means rather than the last bin:
+
+```text
+total_NE_DQMC = mean(num_up) + mean(num_do)
+total_kinetic_DQMC = mean(kinetic) * Lq
+```
+
+The live DQMC benchmark estimates the uncertainty of these means by blocking the time series. The reported `stderr` is the standard error of the mean computed from block means, not the standard deviation of raw per-bin samples.
+
+Changing this conversion is a physics-level change and must be reflected in `benchmarks/references/*.json`, `benchmarks/dqmc_references/*.json`, and `benchmarks/README.md`.
