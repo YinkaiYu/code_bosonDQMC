@@ -1,5 +1,7 @@
 .codex
 build/
+__pycache__/
+*.py[cod]
 *.o
 *.mod
 *.lst
