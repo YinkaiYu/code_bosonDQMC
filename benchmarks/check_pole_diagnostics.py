@@ -34,19 +34,22 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def numeric_rows(path: Path) -> list[list[float]]:
+def first_numeric_rows(path: Path, count: int) -> list[list[float]]:
     rows: list[list[float]] = []
     for line_number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
         stripped = line.strip()
         if not stripped:
             continue
+        if len(rows) == count:
+            break
         fields = stripped.split()
         try:
             rows.append([float(field) for field in fields])
-        except ValueError:
-            if rows:
-                continue
-            raise DiagnosticError(f"{path.name}:{line_number} is not numeric")
+        except ValueError as exc:
+            row_number = len(rows) + 1
+            raise DiagnosticError(
+                f"{path.name} required row {row_number} (line {line_number}) is not numeric"
+            ) from exc
     return rows
 
 
@@ -55,9 +58,9 @@ def parse_param_file(run_dir: Path) -> tuple[int, int, int]:
     if not path.is_file():
         raise DiagnosticError("missing paramC_sets.txt")
 
-    rows = numeric_rows(path)
+    rows = first_numeric_rows(path, 4)
     if len(rows) < 4:
-        raise DiagnosticError("paramC_sets.txt must contain at least four numeric rows")
+        raise DiagnosticError("paramC_sets.txt must contain at least four nonblank rows")
     if len(rows[1]) < 2:
         raise DiagnosticError("paramC_sets.txt lattice row must contain Lx and Ly")
     if len(rows[3]) < 2:
