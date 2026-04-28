@@ -75,6 +75,15 @@ The scalar files write one real value per bin.
 
 On `main`, continuous HS remains the active algorithm. The existing `Conf%phi_list(ns, ii, nt)` stores real continuous fields.
 
+The continuous-field coupling constants are the existing coefficients:
+
+```text
+alpha_cont(U1) = sqrt(-2 * U1 * Dtau)
+alpha_cont(U2) = i * sqrt(2 * U2 * Dtau)
+```
+
+These factors are specific to the continuous Gaussian HS transformation and must not be reused for the discrete HS branch.
+
 The HS log weight is
 
 ```text
@@ -98,6 +107,15 @@ eta(+/-2) = +/- sqrt(2 * (3 + sqrt(6)))
 ```
 
 The field stored in the configuration should be an unambiguous discrete label, not just the mapped `eta` value. A helper maps the label to `eta(l)` for the exponential operator and to `log(gamma(l))` for `log_P_HS`.
+
+The discrete-field coupling constants differ from the continuous-field constants by the missing factor of `sqrt(2)`:
+
+```text
+alpha_disc(U1) = sqrt(-U1 * Dtau)
+alpha_disc(U2) = i * sqrt(U2 * Dtau)
+```
+
+The local exponential uses `exp(alpha_disc * eta(l) * nflag)`. This distinction is part of the HS transformation and is not a tunable normalization.
 
 For a local flip or proposal from `l_old` to `l_new`, the Metropolis ratio uses the same determinant ratio and Green rank-1 update as the continuous code, with these replacements:
 
@@ -137,6 +155,18 @@ green_spectral_radius is consistent with 1 / pole_distance
 ```
 
 Substantive algorithm changes in the discrete HS branch must run the live DQMC benchmark suite. The optional ED recomputation target is not part of this work.
+
+## Documentation Updates
+
+The implementation must update repository documentation so future collaborators and agents can run, compare, and analyze both auxiliary-field schemes. At minimum:
+
+```text
+docs/physics.md
+docs/development.md
+benchmarks/README.md
+```
+
+must document the pole diagnostic output files, the once-per-bin sampling policy, the log-weight convention, and the continuous versus discrete HS coupling constants. The discrete HS branch documentation must also explain the stored field labels, the `eta(l)` and `gamma(l)` maps, and how `log_P_HS` is computed for discrete configurations.
 
 ## Worktree Strategy
 
