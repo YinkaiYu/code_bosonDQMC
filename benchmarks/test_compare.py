@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+import math
 import subprocess
 import sys
 import tempfile
@@ -13,6 +14,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 COMPARE = REPO_ROOT / "benchmarks" / "compare.py"
+POLE_CHECK = REPO_ROOT / "benchmarks" / "check_pole_diagnostics.py"
 REFERENCES = REPO_ROOT / "benchmarks" / "references"
 DQMC_REFERENCES = REPO_ROOT / "benchmarks" / "dqmc_references"
 DQMC_SUITE = REPO_ROOT / "benchmarks" / "dqmc_suite.json"
@@ -319,6 +321,73 @@ class BenchmarkSuiteTests(unittest.TestCase):
         self.assertIn("PASS total_NE", result.stdout)
         self.assertIn("stderr=", result.stdout)
         self.assertIn("z=", result.stdout)
+
+    def test_pole_diagnostic_checker_accepts_consistent_outputs(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            run_dir = Path(tmp)
+            (run_dir / "paramC_sets.txt").write_text(
+                "-1.0 1.0 -2.5\n"
+                "3 2 60 6.0\n"
+                "3 2 60\n"
+                "10 2 1 0.3\n"
+                ".false. 0\n"
+                ".false. 500 1.0 1.0\n"
+                "2 0.1 0.0 0.0\n",
+                encoding="utf-8",
+            )
+            z_row = " ".join(["1.0 0.0"] * 6)
+            (run_dir / "info.txt").write_text("# Cores                                        : 2\n", encoding="utf-8")
+            (run_dir / "pole_z").write_text(f"{z_row}\n{z_row}\n{z_row}\n{z_row}\n", encoding="utf-8")
+            (run_dir / "pole_distance").write_text("1.0\n0.5\n0.1\n0.2\n", encoding="utf-8")
+            (run_dir / "pole_x").write_text(
+                "0.0\n0.3010299956639812\n1.0\n0.6989700043360187\n",
+                encoding="utf-8",
+            )
+            (run_dir / "green_spectral_radius").write_text("1.0\n2.0\n10.0\n5.0\n", encoding="utf-8")
+            (run_dir / "green_smax").write_text("1.0\n2.1\n11.0\n5.5\n", encoding="utf-8")
+            (run_dir / "log_weight").write_text("-3.0\n-2.5\n-2.0\n-1.5\n", encoding="utf-8")
+
+            result = subprocess.run(
+                [sys.executable, str(POLE_CHECK), str(run_dir)],
+                cwd=REPO_ROOT,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("Pole diagnostic files passed", result.stdout)
+
+    def test_pole_diagnostic_checker_rejects_inconsistent_radius(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            run_dir = Path(tmp)
+            (run_dir / "paramC_sets.txt").write_text(
+                "-1.0 1.0 -2.5\n"
+                "3 2 60 6.0\n"
+                "3 2 60\n"
+                "10 1 1 0.3\n"
+                ".false. 0\n"
+                ".false. 500 1.0 1.0\n"
+                "2 0.1 0.0 0.0\n",
+                encoding="utf-8",
+            )
+            (run_dir / "pole_z").write_text(" ".join(["1.0 0.0"] * 6) + "\n", encoding="utf-8")
+            (run_dir / "pole_distance").write_text("0.1\n", encoding="utf-8")
+            (run_dir / "pole_x").write_text("1.0\n", encoding="utf-8")
+            (run_dir / "green_spectral_radius").write_text("9.0\n", encoding="utf-8")
+            (run_dir / "green_smax").write_text("9.0\n", encoding="utf-8")
+            (run_dir / "log_weight").write_text("-2.0\n", encoding="utf-8")
+
+            result = subprocess.run(
+                [sys.executable, str(POLE_CHECK), str(run_dir)],
+                cwd=REPO_ROOT,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("green_spectral_radius", result.stdout + result.stderr)
 
 
 if __name__ == "__main__":
