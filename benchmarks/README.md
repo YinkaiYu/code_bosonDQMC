@@ -8,7 +8,11 @@ make benchmark
 
 `make benchmark` is an alias for `make benchmark-dqmc`. It runs the manifest in `benchmarks/dqmc_suite.json`, which includes the free-boson analytic case plus all four ED cases recorded in `/mnt/c/Users/Newton/Documents/LigroupIOP/2408_bosonSignProblem/temp/benchmark.txt`. All cases must pass.
 
-All live benchmark inputs use `dtau = beta / Ltrot = 0.01`. The interacting cases use `Nbin = 100000`, `Nsweep = 1`, `shiftLoc = 1.5`, and warm-up enabled. On the current WSL workstation with `MPI_NP=1`, the full live suite was observed at `real 604.50` seconds, about 10 minutes 5 seconds; budget at least 15 minutes, and longer if the machine is busy.
+This branch uses the discrete Hubbard-Stratonovich local update with stored
+labels `-2`, `-1`, `1`, and `2`. The full live benchmark is required for
+substantive discrete-HS algorithm validation.
+
+All live benchmark inputs use `dtau = beta / Ltrot = 0.01`. The interacting cases use `Nbin = 100000`, `Nsweep = 1`, `shiftLoc = 1.5`, and warm-up enabled. `shiftLoc` remains in the fixed input format for compatibility, but the discrete proposal ignores it. On the current WSL workstation with `MPI_NP=1`, the full live suite was observed at `real 604.50` seconds, about 10 minutes 5 seconds; budget at least 15 minutes, and longer if the machine is busy.
 
 The fast benchmark is a real DQMC run for the no-interaction `U1=U2=0` case:
 
@@ -50,6 +54,9 @@ total_kinetic = last(kinetic) * Lq
 
 The ED script accumulates `NE = NE_b + NE_c` and its kinetic operator includes both b and c hopping layers. The DQMC `kinetic` file includes both flavors and is divided by `Lq` in `src/obser_equal.f90`.
 
+The live benchmark still compares `num_up + num_do` and `kinetic * Lq` to the
+ED or analytic references after these conversions.
+
 Interacting real DQMC benchmarks use sample means instead of the last bin:
 
 ```text
@@ -59,7 +66,11 @@ total_kinetic = mean(kinetic) * Lq
 
 ## Pole Diagnostic Checks
 
-Continuous pole diagnostics are structural and analysis outputs, not ED physics observables. They are not used in live benchmark pass/fail decisions.
+Pole diagnostics are structural and analysis outputs, not ED physics observables. They are not used in live benchmark pass/fail decisions.
+
+The discrete-HS branch keeps the same pole diagnostic output files and row
+semantics as the continuous-HS branch, so the same checks and analysis scripts
+can be used across branches.
 
 For a run with `Nbin` bins and MPI size `ISIZE`, the diagnostic files contain `Nbin * ISIZE` configuration samples. One sample is written per bin per MPI rank, and rank 0 gathers rank-local samples and writes rows in rank order. These samples are not rank averaged.
 

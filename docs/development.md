@@ -37,6 +37,23 @@ The executable writes scalar observables and logs into the current working direc
 
 Output filenames are fixed by the Fortran executable. Keep generated outputs inside run directories unless the runtime I/O contract is being deliberately changed.
 
+## Discrete-HS Input Contract
+
+This branch uses discrete local auxiliary-field flips. Every stored field value
+in `confin.txt` or `confout.txt` must be one of the legal labels:
+
+```text
+-2, -1, 1, 2
+```
+
+The restart reader validates labels strictly. Old continuous-HS `confout` or
+`confin` files that contain Gaussian field values are not valid restarts for
+this branch unless they are converted to legal discrete labels.
+
+The fixed `paramC_sets.txt` format still includes `shiftLoc` and
+`shiftWarm(1:2)` for compatibility with existing input files and scripts. The
+discrete local proposal ignores those values.
+
 ## Adding A Run Case
 
 Create a directory under `runs/examples/` or an untracked working run directory with:
@@ -51,7 +68,7 @@ Run it locally:
 bash scripts/run_local.sh path/to/run_dir 1
 ```
 
-The default example target writes scalar observables, logs, and continuous pole diagnostic files into `runs/examples/triangle_3x2`:
+The default example target writes scalar observables, logs, and pole diagnostic files into `runs/examples/triangle_3x2`:
 
 ```bash
 make run-example
@@ -62,6 +79,9 @@ Validate the pole diagnostic file structure and cross-file consistency for any c
 ```bash
 python3 benchmarks/check_pole_diagnostics.py <run_dir>
 ```
+
+`benchmarks/check_pole_diagnostics.py` remains valid for this discrete-HS branch
+because the diagnostic file names and row semantics are unchanged.
 
 ## Adding A Benchmark Case
 

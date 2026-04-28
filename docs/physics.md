@@ -19,17 +19,43 @@ The current convention is:
 
 ## Hubbard-Stratonovich Fields
 
-The Trotter decomposition uses two continuous auxiliary fields:
-
-- `phi_1` couples to `n_b + n_c` with real coefficient `sqrt(-2 * Dtau * U1)`.
-- `phi_2` couples to `n_b - n_c` with imaginary coefficient `i * sqrt(2 * Dtau * U2)`.
-
-Equivalently, the continuous-HS coupling constants are:
+This branch uses four-point discrete Hubbard-Stratonovich labels instead of
+continuous Gaussian fields. At each auxiliary-field space-time point, the stored
+field is a label:
 
 ```text
-alpha_cont(U1) = sqrt(-2 * U1 * Dtau)
-alpha_cont(U2) = i * sqrt(2 * U2 * Dtau)
+l in {-2, -1, 1, 2}
 ```
+
+`Conf%phi_list(ns, ii, nt)` stores this label in the discrete-HS branch. It does
+not store a continuous Gaussian field value.
+
+The discrete-HS coupling constants are:
+
+```text
+alpha_disc(U1) = sqrt(-U1 * Dtau)
+alpha_disc(U2) = i * sqrt(U2 * Dtau)
+```
+
+The label-dependent quadrature values are:
+
+| Label `l` | `eta(l)` | `gamma(l)` |
+| --- | --- | --- |
+| `-1` | `-sqrt(2 * (3 - sqrt(6)))` | `1 + sqrt(6) / 3` |
+| `1` | `sqrt(2 * (3 - sqrt(6)))` | `1 + sqrt(6) / 3` |
+| `-2` | `-sqrt(2 * (3 + sqrt(6)))` | `1 - sqrt(6) / 3` |
+| `2` | `sqrt(2 * (3 + sqrt(6)))` | `1 - sqrt(6) / 3` |
+
+For the discrete auxiliary fields,
+
+```text
+log_P_HS = sum log(gamma(l))
+```
+
+with normalization constants omitted. A local update proposes uniformly among
+the three legal labels different from the old label, so the proposal ratio is
+`1`. `shiftLoc` and `shiftWarm(1:2)` remain in `paramC_sets.txt` for fixed input
+format compatibility, but the discrete local proposal does not use them.
 
 After decoupling, the two flavor Hamiltonians are complex conjugates. The code samples the `b` flavor explicitly. The `c` flavor Green matrix is reconstructed with complex conjugation.
 
@@ -50,9 +76,13 @@ Grdo  = dconjg(Prop%Gr)
 Grdoc = dconjg(transpose(Grdo)) - ZKRON
 ```
 
-## Continuous Pole Diagnostics
+## Pole Diagnostics
 
-The continuous-HS run writes configuration-level pole diagnostics alongside the scalar observables:
+This branch inherits the pole diagnostic outputs from the continuous-HS branch.
+The output files and row semantics are unchanged, so continuous and discrete
+branch runs can be compared with the same analysis scripts.
+
+The run writes configuration-level pole diagnostics alongside the scalar observables:
 
 | DQMC output file | Meaning |
 | --- | --- |
@@ -63,10 +93,10 @@ The continuous-HS run writes configuration-level pole diagnostics alongside the 
 | `green_smax` | largest singular value of `G` |
 | `log_weight` | `log_P_HS + 2 * sum log(s_a(G))` |
 
-Here `mu_a(G)` are eigenvalues of the `b`-flavor Green matrix and `s_a(G)` are its singular values. For the continuous fields,
+Here `mu_a(G)` are eigenvalues of the `b`-flavor Green matrix and `s_a(G)` are its singular values. For the discrete fields in this branch,
 
 ```text
-log_P_HS = -0.5 * sum phi^2
+log_P_HS = sum log(gamma(l))
 ```
 
 with normalization constants omitted from `log_weight`.
@@ -88,13 +118,13 @@ Pole diagnostics are configuration diagnostics. They do not change the density, 
 | `U1`, `U2` | `RU1`, `RU2` in `CalcBasic`, read from `paramC_sets.txt` |
 | `mu` | `mu` in `CalcBasic`, read from `paramC_sets.txt` |
 | auxiliary field flavor index | `ns = 1` for `U1`, `ns = 2` for `U2` |
-| auxiliary fields | `Conf%phi_list(ns, ii, nt)` in `src/fields.f90` |
+| auxiliary fields | `Conf%phi_list(ns, ii, nt)` stores discrete labels `l in {-2, -1, 1, 2}` in `src/fields.f90` |
 | triangular lattice nearest-neighbor bonds | `Latt%L_bonds(ii, nb)` in `src/lattice.f90` |
 | space-time bonds | `Latt%LT_bonds(iit, nb)` in `src/lattice.f90` |
 | `b` flavor Green matrix | `Prop%Gr` |
 | `c` flavor Green matrix | `dconjg(Prop%Gr)` |
-| local update shift | `shiftLoc` in `CalcBasic`, read from `paramC_sets.txt` |
-| warm-up shift | `shiftWarm(1:2)` in `CalcBasic`, read from `paramC_sets.txt` |
+| local update shift | `shiftLoc` in `CalcBasic`, read from `paramC_sets.txt` for format compatibility and ignored by the discrete proposal |
+| warm-up shift | `shiftWarm(1:2)` in `CalcBasic`, read from `paramC_sets.txt` for format compatibility and ignored by the discrete proposal |
 
 ## Observable Map
 
