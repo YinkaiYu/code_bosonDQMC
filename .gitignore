@@ -1,4 +1,5 @@
 .codex
+.worktrees/
 build/
 __pycache__/
 *.py[cod]
