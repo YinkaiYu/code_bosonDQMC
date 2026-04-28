@@ -9,6 +9,28 @@ module LocalU_mod
     real(kind=8) :: phi_new
     
 contains
+    real(kind=8) function propose_discrete_label(old_label, iseed) result(new_label)
+        real(kind=8), intent(in) :: old_label
+        integer, intent(inout) :: iseed
+        real(kind=8), dimension(4), parameter :: labels = (/ -2.d0, -1.d0, 1.d0, 2.d0 /)
+        integer :: old_index, draw_index, proposed_index, ilabel
+
+        old_index = 0
+        do ilabel = 1, 4
+            if (nint(old_label) == nint(labels(ilabel))) old_index = ilabel
+        enddo
+        if (old_index == 0) then
+            write(6,*) 'illegal old discrete HS label:', old_label, 'rank', IRANK
+            stop
+        endif
+
+        draw_index = nranf(iseed, 3)
+        proposed_index = draw_index
+        if (proposed_index >= old_index) proposed_index = proposed_index + 1
+        new_label = labels(proposed_index)
+        return
+    end function propose_discrete_label
+
     subroutine LocalU_init(Op_U)
         type(OperatorHubbard), intent(inout) :: Op_U
         call Op_U%Acc_U_local%init()
@@ -38,7 +60,7 @@ contains
 !   Local: 
         real(kind=8), external :: ranf
         real(kind=8) :: phi_old, phi_new
-        real(kind=8) :: xflip, Xdif, random
+        real(kind=8) :: random
         real(kind=8) :: ratio_abs
         complex(kind=8) :: ratio_det, ratio_exp
         integer :: mm, nn
@@ -48,9 +70,7 @@ contains
 
 ! Local update on space-time (ii, ntau) for auxiliary field flavor (nf)
         phi_old = Conf%phi_list(nf, ii, ntau)
-        xflip = ranf(iseed)
-        Xdif = dble((xflip - 0.5) * abs(shiftLoc))
-        phi_new = phi_old + Xdif
+        phi_new = propose_discrete_label(phi_old, iseed)
 ! Calculate Metropolis ratio   
         call Op_U%get_delta(phi_old, phi_new)
         ratio_exp = Op_U%ratio_gaussian
@@ -120,15 +140,13 @@ contains
 ! Local: 
         real(kind=8), external :: ranf
         real(kind=8) :: phi_old, phi_new
-        real(kind=8) :: xflip, Xdif, random
+        real(kind=8) :: random
         real(kind=8) :: ratio_abs
         complex(kind=8) :: ratio_exp
 
 ! Local update on space-time (ii, ntau) for auxiliary field flavor (nf)
         phi_old = Conf%phi_list(nf, ii, ntau)
-        xflip = ranf(iseed)
-        Xdif = dble((xflip - 0.5) * abs(shiftLoc))
-        phi_new = phi_old + Xdif
+        phi_new = propose_discrete_label(phi_old, iseed)
 ! Calculate auxiliary Gaussian ratio   
         call Op_U%get_delta(phi_old, phi_new)
         ratio_exp = Op_U%ratio_gaussian

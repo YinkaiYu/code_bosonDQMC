@@ -141,6 +141,7 @@ contains
             write(50,*) 'Hubbard U1                                     :', RU1
             write(50,*) 'Hubbard U2                                     :', RU2
             write(50,*) 'chemical potential                             :', mu
+            write(50,*) 'Auxiliary field scheme                         : discrete'
             write(50,*) 'Local update auxiliary field magnitude Shift   :', shiftLoc
             ! if (is_global) then
             ! write(50,*) '# Global                                       :', Nglobal ! global Metropolis algorithm

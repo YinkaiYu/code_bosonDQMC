@@ -26,9 +26,31 @@ contains
         return
     end subroutine AuxConf_clear
 
+    real(kind=8) function log_gamma_label(label) result(log_gamma)
+        real(kind=8), intent(in) :: label
+        select case (abs(nint(label)))
+        case (1)
+            log_gamma = log(1.d0 + sqrt(6.d0) / 3.d0)
+        case (2)
+            log_gamma = log(1.d0 - sqrt(6.d0) / 3.d0)
+        case default
+            write(6,*) 'illegal discrete HS label for log gamma:', label, 'rank', IRANK
+            stop
+        end select
+        return
+    end function log_gamma_label
+
     real(kind=8) function AuxConf_log_weight(this) result(log_weight)
         class(AuxConf), intent(in) :: this
-        log_weight = -0.5d0 * sum(this%phi_list * this%phi_list)
+        integer :: ii, ns, nt
+        log_weight = 0.d0
+        do nt = 1, Ltrot
+            do ii = 1, Ndim
+                do ns = 1, Naux
+                    log_weight = log_weight + log_gamma_label(this%phi_list(ns, ii, nt))
+                enddo
+            enddo
+        enddo
         return
     end function AuxConf_log_weight
     
@@ -117,39 +139,23 @@ contains
         integer, intent(inout) :: itmp
 ! Local: 
         integer :: ii, ns, nt
-        real(kind=8) :: X
-        real(kind=8), external :: ranf
         
-        if (iniType == 1) then
-            do nt = 1, LtrotTherm
-                do ii = 1, NdimTherm
-                    do ns = 1, Naux
-                        X = ranf(itmp)
-                        phi_list(ns, ii, nt) = iniBias(ns) + iniAmpl * (X - 0.5)
-                    enddo
+        do nt = 1, LtrotTherm
+            do ii = 1, NdimTherm
+                do ns = 1, Naux
+                    select case (nranf(itmp, 4))
+                    case (1)
+                        phi_list(ns, ii, nt) = -2.d0
+                    case (2)
+                        phi_list(ns, ii, nt) = -1.d0
+                    case (3)
+                        phi_list(ns, ii, nt) = 1.d0
+                    case (4)
+                        phi_list(ns, ii, nt) = 2.d0
+                    end select
                 enddo
             enddo
-        elseif (iniType == 2) then
-            do nt = 1, LtrotTherm
-                do ii = 1, NdimTherm
-                    do ns = 1, Naux
-                        X = rng_Gaussian(itmp)
-                        phi_list(ns, ii, nt) = iniBias(ns) + iniAmpl * X
-                    enddo
-                enddo
-            enddo
-        elseif (iniType == 3) then
-            do nt = 1, LtrotTherm
-                do ii = 1, NdimTherm
-                    do ns = 1, Naux
-                        X = rng_Gaussian(itmp)
-                        phi_list(ns, ii, nt) = iniBias(ns) + iniAmpl * abs(X)
-                    enddo
-                enddo
-            enddo
-        else
-            write(6,*) "incorrect initype input", initype, " on rank ", IRANK
-        endif
+        enddo
         return
     end subroutine conf_set
     

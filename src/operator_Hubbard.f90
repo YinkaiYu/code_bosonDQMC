@@ -14,7 +14,7 @@ module OperatorHubbard_mod
     end type AccCounter
     
     type :: OperatorHubbard
-        complex(kind=8), private :: alpha ! = sqrt(-2UΔτ)
+        complex(kind=8), private :: alpha
         complex(kind=8), private :: gaussian
         complex(kind=8), private :: expalpha
 
@@ -30,12 +30,44 @@ module OperatorHubbard_mod
     end type OperatorHubbard
     
 contains
+    real(kind=8) function hs_eta(label) result(eta)
+        real(kind=8), intent(in) :: label
+        select case (nint(label))
+        case (-1)
+            eta = -sqrt(2.d0 * (3.d0 - sqrt(6.d0)))
+        case (1)
+            eta = sqrt(2.d0 * (3.d0 - sqrt(6.d0)))
+        case (-2)
+            eta = -sqrt(2.d0 * (3.d0 + sqrt(6.d0)))
+        case (2)
+            eta = sqrt(2.d0 * (3.d0 + sqrt(6.d0)))
+        case default
+            write(6,*) 'illegal discrete HS label for eta:', label, 'rank', IRANK
+            stop
+        end select
+        return
+    end function hs_eta
+
+    real(kind=8) function hs_gamma(label) result(gamma)
+        real(kind=8), intent(in) :: label
+        select case (abs(nint(label)))
+        case (1)
+            gamma = 1.d0 + sqrt(6.d0) / 3.d0
+        case (2)
+            gamma = 1.d0 - sqrt(6.d0) / 3.d0
+        case default
+            write(6,*) 'illegal discrete HS label for gamma:', label, 'rank', IRANK
+            stop
+        end select
+        return
+    end function hs_gamma
+
     subroutine opU_set(this, RU)
         class(OperatorHubbard), intent(inout) :: this
         real(kind=8), intent(in) :: RU
         this%alpha = dcmplx( 0.d0, 0.d0 )
-        if ( RU < -Zero ) this%alpha = dcmplx( sqrt(-2.d0 * RU * Dtau), 0.d0 )
-        if ( RU >  Zero ) this%alpha = dcmplx( 0.d0, sqrt( 2.d0 * RU * Dtau) )
+        if ( RU < -Zero ) this%alpha = dcmplx( sqrt(-RU * Dtau), 0.d0 )
+        if ( RU >  Zero ) this%alpha = dcmplx( 0.d0, sqrt( RU * Dtau) )
         return
     end subroutine opU_set
     
@@ -43,8 +75,8 @@ contains
         class(OperatorHubbard), intent(inout) :: this
         integer, intent(in) :: nflag ! +1 or -1; propagating direction
         real(kind=8), intent(in) :: phi ! space time local auxiliary field value, for phi_1 or phi_2
-        this%gaussian = dcmplx( exp(-0.5d0 * phi * phi), 0.d0 )
-        this%expalpha = exp( this%alpha * phi * nflag )
+        this%gaussian = dcmplx(hs_gamma(phi), 0.d0)
+        this%expalpha = exp( this%alpha * hs_eta(phi) * nflag )
         return
     end subroutine opU_get_exp
     
