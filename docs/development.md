@@ -46,9 +46,14 @@ in `confin.txt` or `confout.txt` must be one of the legal labels:
 -2, -1, 1, 2
 ```
 
-The restart reader validates labels strictly. Old continuous-HS `confout` or
-`confin` files that contain Gaussian field values are not valid restarts for
-this branch unless they are converted to legal discrete labels.
+Old continuous-HS `confout` or `confin` files that contain Gaussian field
+values are not valid restarts for this branch unless they are converted to
+legal discrete labels before reuse. The restart reader loads raw values from
+`confin.txt`; discrete label values are strictly checked when they are used by
+the discrete HS eta/gamma, log-weight, or local-update routines. Invalid
+restart labels will stop the run during those operations, not necessarily at
+file-read time, so debug restart failures by checking every stored field value
+against the legal label set above.
 
 The fixed `paramC_sets.txt` format still includes `shiftLoc` and
 `shiftWarm(1:2)` for compatibility with existing input files and scripts. The
