@@ -4,6 +4,9 @@ module Fields_mod
     
     public :: AuxConf, conf_in, conf_out
     private
+
+    real(kind=8), dimension(4), parameter :: hs_labels = (/ -2.d0, -1.d0, 1.d0, 2.d0 /)
+    real(kind=8), parameter :: hs_label_tol = 1.d-10
     
     type :: AuxConf
         real(kind=8), dimension(:,:,:), public, allocatable :: phi_list
@@ -26,9 +29,26 @@ contains
         return
     end subroutine AuxConf_clear
 
+    integer function hs_label_index(label) result(index)
+        real(kind=8), intent(in) :: label
+        integer :: ilabel
+
+        index = 0
+        do ilabel = 1, size(hs_labels)
+            if (abs(label - hs_labels(ilabel)) <= hs_label_tol) then
+                index = nint(hs_labels(ilabel))
+                return
+            endif
+        enddo
+        return
+    end function hs_label_index
+
     real(kind=8) function log_gamma_label(label) result(log_gamma)
         real(kind=8), intent(in) :: label
-        select case (abs(nint(label)))
+        integer :: label_index
+
+        label_index = hs_label_index(label)
+        select case (abs(label_index))
         case (1)
             log_gamma = log(1.d0 + sqrt(6.d0) / 3.d0)
         case (2)

@@ -3,22 +3,34 @@ module LocalU_mod
     implicit none
     
     public
-    private :: LocalU_metro, LocalU_metro_therm, phi_new
+    private :: LocalU_metro, LocalU_metro_therm, phi_new, discrete_label_index, discrete_labels, discrete_label_tol
     
     
     real(kind=8) :: phi_new
+    real(kind=8), dimension(4), parameter :: discrete_labels = (/ -2.d0, -1.d0, 1.d0, 2.d0 /)
+    real(kind=8), parameter :: discrete_label_tol = 1.d-10
     
 contains
+    integer function discrete_label_index(label) result(index)
+        real(kind=8), intent(in) :: label
+        integer :: ilabel
+
+        index = 0
+        do ilabel = 1, size(discrete_labels)
+            if (abs(label - discrete_labels(ilabel)) <= discrete_label_tol) then
+                index = ilabel
+                return
+            endif
+        enddo
+        return
+    end function discrete_label_index
+
     real(kind=8) function propose_discrete_label(old_label, iseed) result(new_label)
         real(kind=8), intent(in) :: old_label
         integer, intent(inout) :: iseed
-        real(kind=8), dimension(4), parameter :: labels = (/ -2.d0, -1.d0, 1.d0, 2.d0 /)
-        integer :: old_index, draw_index, proposed_index, ilabel
+        integer :: old_index, draw_index, proposed_index
 
-        old_index = 0
-        do ilabel = 1, 4
-            if (nint(old_label) == nint(labels(ilabel))) old_index = ilabel
-        enddo
+        old_index = discrete_label_index(old_label)
         if (old_index == 0) then
             write(6,*) 'illegal old discrete HS label:', old_label, 'rank', IRANK
             stop
@@ -27,7 +39,7 @@ contains
         draw_index = nranf(iseed, 3)
         proposed_index = draw_index
         if (proposed_index >= old_index) proposed_index = proposed_index + 1
-        new_label = labels(proposed_index)
+        new_label = discrete_labels(proposed_index)
         return
     end function propose_discrete_label
 
