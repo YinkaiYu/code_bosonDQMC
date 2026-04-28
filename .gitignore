@@ -23,6 +23,12 @@ bosonDQMC.out
 /runs/**/den_upup_sub*
 /runs/**/den_dodo_sub*
 /runs/**/den_updo
+/runs/**/pole_z
+/runs/**/pole_distance
+/runs/**/pole_x
+/runs/**/green_spectral_radius
+/runs/**/green_smax
+/runs/**/log_weight
 /benchmarks/ed/params.txt
 /benchmarks/ed/results.txt
 /benchmarks/ed/calc.log

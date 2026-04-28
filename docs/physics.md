@@ -24,6 +24,13 @@ The Trotter decomposition uses two continuous auxiliary fields:
 - `phi_1` couples to `n_b + n_c` with real coefficient `sqrt(-2 * Dtau * U1)`.
 - `phi_2` couples to `n_b - n_c` with imaginary coefficient `i * sqrt(2 * Dtau * U2)`.
 
+Equivalently, the continuous-HS coupling constants are:
+
+```text
+alpha_cont(U1) = sqrt(-2 * U1 * Dtau)
+alpha_cont(U2) = i * sqrt(2 * U2 * Dtau)
+```
+
 After decoupling, the two flavor Hamiltonians are complex conjugates. The code samples the `b` flavor explicitly. The `c` flavor Green matrix is reconstructed with complex conjugation.
 
 ## Green Function Convention
@@ -42,6 +49,31 @@ Grupc = transpose(Grup) - ZKRON
 Grdo  = dconjg(Prop%Gr)
 Grdoc = dconjg(transpose(Grdo)) - ZKRON
 ```
+
+## Continuous Pole Diagnostics
+
+The continuous-HS run writes configuration-level pole diagnostics alongside the scalar observables:
+
+| DQMC output file | Meaning |
+| --- | --- |
+| `pole_z` | Re/Im pairs for `z_a = 1 / mu_a(G)` |
+| `pole_distance` | `min_a |z_a|` |
+| `pole_x` | `-log10(pole_distance)` |
+| `green_spectral_radius` | `max_a |mu_a(G)|` |
+| `green_smax` | largest singular value of `G` |
+| `log_weight` | `log_P_HS + 2 * sum log(s_a(G))` |
+
+Here `mu_a(G)` are eigenvalues of the `b`-flavor Green matrix and `s_a(G)` are its singular values. For the continuous fields,
+
+```text
+log_P_HS = -0.5 * sum phi^2
+```
+
+with normalization constants omitted from `log_weight`.
+
+These diagnostics are sampled once per bin per MPI rank. For `MPI_NP > 1`, each rank contributes one independent configuration sample per bin, and rank 0 gathers and writes `ISIZE` rows per bin in rank order. The rows are not rank averaged. Use `MPI_NP=1` when following a single Markov-chain time series or pole-spike trace.
+
+Pole diagnostics are configuration diagnostics. They do not change the density, number, kinetic, or occupancy observable normalizations below.
 
 ## Physical Symbols To Code Variables
 

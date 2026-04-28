@@ -35,6 +35,8 @@ The executable reads these files from the current working directory:
 
 The executable writes scalar observables and logs into the current working directory. Run from a dedicated directory to avoid mixing outputs from unrelated parameter sets.
 
+Output filenames are fixed by the Fortran executable. Keep generated outputs inside run directories unless the runtime I/O contract is being deliberately changed.
+
 ## Adding A Run Case
 
 Create a directory under `runs/examples/` or an untracked working run directory with:
@@ -47,6 +49,18 @@ Run it locally:
 
 ```bash
 bash scripts/run_local.sh path/to/run_dir 1
+```
+
+The default example target writes scalar observables, logs, and continuous pole diagnostic files into `runs/examples/triangle_3x2`:
+
+```bash
+make run-example
+```
+
+Validate the pole diagnostic file structure and cross-file consistency for any completed run with:
+
+```bash
+python3 benchmarks/check_pole_diagnostics.py <run_dir>
 ```
 
 ## Adding A Benchmark Case

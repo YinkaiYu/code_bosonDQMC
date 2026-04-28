@@ -24,7 +24,7 @@ For one-off debugging of a single case, override both `DQMC_BENCHMARK_INPUT_DIR`
 
 ## Live Pass/Fail Semantics
 
-For an interacting live DQMC observable, `benchmarks/compare.py` first converts each bin to the ED scale. It then groups the 100000 samples into 10 blocks of 10000 samples. The reported `stderr` is the standard error of the Monte Carlo mean:
+For an interacting live DQMC observable, `benchmarks/compare.py` first converts each bin to the ED scale. Live benchmark pass/fail remains based on the `num_up`, `num_do`, and `kinetic` conversions documented below. It then groups the 100000 samples into 10 blocks of 10000 samples. The reported `stderr` is the standard error of the Monte Carlo mean:
 
 ```text
 stderr = std(block_means) / sqrt(number_of_blocks)
@@ -55,6 +55,18 @@ Interacting real DQMC benchmarks use sample means instead of the last bin:
 ```text
 total_NE = mean(num_up) + mean(num_do)
 total_kinetic = mean(kinetic) * Lq
+```
+
+## Pole Diagnostic Checks
+
+Continuous pole diagnostics are structural and analysis outputs, not ED physics observables. They are not used in live benchmark pass/fail decisions.
+
+For a run with `Nbin` bins and MPI size `ISIZE`, the diagnostic files contain `Nbin * ISIZE` configuration samples. One sample is written per bin per MPI rank, and rank 0 gathers rank-local samples and writes rows in rank order. These samples are not rank averaged.
+
+Validate the diagnostic file structure and consistency with:
+
+```bash
+python3 benchmarks/check_pole_diagnostics.py <run_dir>
 ```
 
 ## Adding A Case
