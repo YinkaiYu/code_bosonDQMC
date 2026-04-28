@@ -93,6 +93,7 @@ SOURCES := \
   dynamics.f90 \
   local_sweep.f90 \
   fourier_trans.f90 \
+  pole_diagnostics.f90 \
   main.f90
 
 OBJECTS := $(addprefix $(OBJ_DIR)/,$(SOURCES:.f90=.o))

@@ -9,6 +9,7 @@ module Fields_mod
         real(kind=8), dimension(:,:,:), public, allocatable :: phi_list
     contains
         procedure   :: make =>  AuxConf_make
+        procedure   :: log_weight => AuxConf_log_weight
         final       ::          AuxConf_clear
     end type AuxConf
 
@@ -24,6 +25,12 @@ contains
         deallocate(this%phi_list)
         return
     end subroutine AuxConf_clear
+
+    real(kind=8) function AuxConf_log_weight(this) result(log_weight)
+        class(AuxConf), intent(in) :: this
+        log_weight = -0.5d0 * sum(this%phi_list * this%phi_list)
+        return
+    end function AuxConf_log_weight
     
     subroutine conf_in(Conf, iseed, Latt)
         class(AuxConf), intent(inout) :: Conf

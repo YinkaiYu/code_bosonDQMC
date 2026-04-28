@@ -2,6 +2,7 @@ program bosonDQMC
     use LocalSweep_mod
     ! use GlobalUpdate_mod
     use FourierTrans_mod
+    use PoleDiagnostics_mod
     implicit none
     include 'mpif.h'
     
@@ -14,6 +15,7 @@ program bosonDQMC
     ! type(GlobalUpdate) :: Sweep_global
     type(LocalSweep) :: Sweep_local
     type(FourierTrans) :: Fourier
+    type(PoleDiagnostics) :: PoleDiag
     type(Propagator), allocatable :: Prop
     type(WrapList), allocatable :: WrList
 
@@ -49,6 +51,7 @@ program bosonDQMC
         ! if (is_global) call Sweep_global%sweep(Prop, WrList, iseed, is_beta)
         call Sweep_local%sweep(Prop, WrList, iseed, is_beta, istau_tmp)
         call Fourier%preq(Obs_equal)
+        call PoleDiag%write(Prop)
         if (istau_tmp) call Fourier%prtau(Obs_tau)
     enddo
 ! control print
