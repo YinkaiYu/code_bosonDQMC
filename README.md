@@ -66,7 +66,7 @@ This runs `mpirun -np 1` through the local helper in fresh temporary directories
 - one free-boson `U1=U2=0` analytic case
 - the four ED reference cases recorded in `temp/benchmark.txt`
 
-All live suite cases use `dtau = beta / Ltrot = 0.01`; the interacting cases use `Nbin = 100000`. On the current WSL workstation with `MPI_NP=1`, the full suite was observed at `real 604.50` seconds, about 10 minutes 5 seconds; allow 15 minutes or more under load. Do not reduce `Ltrot` or `Nbin` just to make a substantive algorithm benchmark faster.
+All live suite cases compare `total_NE`, `total_kinetic`, `doubleOcc`, `squareOcc`, `numsquare_up`, and `numsquare_do`. All live suite cases use `dtau = beta / Ltrot = 0.01`; the interacting cases use `Nbin = 100000`. On the current WSL workstation with `MPI_NP=1`, the full suite was observed at `real 604.50` seconds, about 10 minutes 5 seconds; allow 15 minutes or more under load. Do not reduce `Ltrot` or `Nbin` just to make a substantive algorithm benchmark faster.
 
 For a fast live benchmark, run only the no-interaction `U1=U2=0` DQMC case against the analytic reference:
 
@@ -82,7 +82,7 @@ Optional ED recomputation:
 make benchmark-ed
 ```
 
-This requires the Python dependencies used by `benchmarks/ed/EDtriangle_symm_NEblock.py`, including QuSpin and Numba.
+This runs the dense fixed-particle-number ED script in `benchmarks/ed/EDtriangle_symm_NEblock.py` for the checked-in 3x2 ED parameter file.
 
 ## Documentation
 

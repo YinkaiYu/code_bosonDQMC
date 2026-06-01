@@ -47,7 +47,7 @@ In code, `Prop%Gr` stores the `b` flavor matrix. `ObserEqual_mod` constructs:
 Grup  = Prop%Gr
 Grupc = transpose(Grup) - ZKRON
 Grdo  = dconjg(Prop%Gr)
-Grdoc = dconjg(transpose(Grdo)) - ZKRON
+Grdoc = transpose(Grdo) - ZKRON
 ```
 
 ## Continuous Pole Diagnostics
@@ -105,8 +105,8 @@ Pole diagnostics are configuration diagnostics. They do not change the density, 
 | `num_up` | `Obs%num_up` | total `b`-flavor particle number |
 | `num_do` | `Obs%num_do` | total `c`-flavor particle number |
 | `kinetic` | `Obs%kinetic` | kinetic observable accumulated with division by `Lq` in `Obs_equal_calc` |
-| `doubleOcc` | `Obs%doubleOcc` | per-site cross-flavor density product |
-| `squareOcc` | `Obs%squareOcc` | per-site same-flavor square contribution |
+| `doubleOcc` | `Obs%doubleOcc` | per-site cross-flavor onsite density product, `<sum_i n_b,i n_c,i> / Lq` |
+| `squareOcc` | `Obs%squareOcc` | per-site half normal-ordered same-flavor onsite pair, `0.5 * <sum_i,s n_s,i (n_s,i - 1)> / Lq` |
 | `numsquare_up` | `Obs%numsquare_up` | total `b`-flavor number-square estimator |
 | `numsquare_do` | `Obs%numsquare_do` | total `c`-flavor number-square estimator |
 | `den_upup_sub11` | `Obs%den_corr_up` after Fourier transform | `b-b` density correlation for the single orbital case |
@@ -119,18 +119,25 @@ The ED reference script loops over two-species fixed-`NE` blocks and reports:
 
 - total particle number `NE = NE_b + NE_c`
 - total kinetic expectation value from both flavor hopping layers
+- `doubleOcc`, `squareOcc`, `numsquare_up`, and `numsquare_do`
 
 The DQMC code writes:
 
 - `num_up` for the `b` flavor
 - `num_do` for the `c` flavor
 - `kinetic` divided by `Lq`
+- `doubleOcc` and `squareOcc` with the per-site normalizations in the observable map
+- `numsquare_up` and `numsquare_do` as total flavor number-square estimators
 
 Therefore the benchmark comparison should use:
 
 ```text
 total_NE_DQMC = last(num_up) + last(num_do)
 total_kinetic_DQMC = last(kinetic) * Lq
+doubleOcc_DQMC = last(doubleOcc)
+squareOcc_DQMC = last(squareOcc)
+numsquare_up_DQMC = last(numsquare_up)
+numsquare_do_DQMC = last(numsquare_do)
 ```
 
 For real Monte Carlo runs, use sample means rather than the last bin:
@@ -138,6 +145,10 @@ For real Monte Carlo runs, use sample means rather than the last bin:
 ```text
 total_NE_DQMC = mean(num_up) + mean(num_do)
 total_kinetic_DQMC = mean(kinetic) * Lq
+doubleOcc_DQMC = mean(doubleOcc)
+squareOcc_DQMC = mean(squareOcc)
+numsquare_up_DQMC = mean(numsquare_up)
+numsquare_do_DQMC = mean(numsquare_do)
 ```
 
 The live DQMC benchmark estimates the uncertainty of these means by blocking the time series. The reported `stderr` is the standard error of the mean computed from block means, not the standard deviation of raw per-bin samples.

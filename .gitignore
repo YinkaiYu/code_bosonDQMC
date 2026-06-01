@@ -31,4 +31,5 @@ bosonDQMC.out
 /runs/**/log_weight
 /benchmarks/ed/params.txt
 /benchmarks/ed/results.txt
+/benchmarks/ed/results.json
 /benchmarks/ed/calc.log

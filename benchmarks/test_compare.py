@@ -26,6 +26,10 @@ EXPECTED_CASES = {
         "U2": 1.0,
         "total_NE": 0.08999902580923487,
         "total_kinetic": -0.17786109516236884,
+        "doubleOcc": 0.0013749579825925882,
+        "squareOcc": 4.815742578638055e-05,
+        "numsquare_up": 0.047057574907035285,
+        "numsquare_do": 0.04705757490703528,
     },
     "triangle_3x2_beta6_mu-2.5_u1_0_u2_1": {
         "beta": 6.0,
@@ -34,6 +38,10 @@ EXPECTED_CASES = {
         "U2": 1.0,
         "total_NE": 0.0008330248173669302,
         "total_kinetic": -0.001659465125418983,
+        "doubleOcc": 5.0104309962475375e-06,
+        "squareOcc": 2.3674394261440157e-09,
+        "numsquare_up": 0.00041666206338322737,
+        "numsquare_do": 0.00041666206338322737,
     },
     "triangle_3x2_beta1_mu-5_u1_-0.1_u2_1": {
         "beta": 1.0,
@@ -42,6 +50,10 @@ EXPECTED_CASES = {
         "U2": 1.0,
         "total_NE": 0.13997061039816858,
         "total_kinetic": -0.2558942387788746,
+        "doubleOcc": 0.0006443360186882365,
+        "squareOcc": 0.00010290172053800603,
+        "numsquare_up": 0.07470426129050677,
+        "numsquare_do": 0.07470426129050675,
     },
     "triangle_3x2_beta1.4_mu-5_u1_-0.1_u2_1": {
         "beta": 1.4,
@@ -50,7 +62,20 @@ EXPECTED_CASES = {
         "U2": 1.0,
         "total_NE": 0.027122698028982088,
         "total_kinetic": -0.052062742470074974,
+        "doubleOcc": 4.100795667581261e-05,
+        "squareOcc": 2.7048360250369176e-06,
+        "numsquare_up": 0.01372537799342425,
+        "numsquare_do": 0.01372537799342425,
     },
+}
+
+EXPECTED_SCALAR_OBSERVABLES = {
+    "total_NE",
+    "total_kinetic",
+    "doubleOcc",
+    "squareOcc",
+    "numsquare_up",
+    "numsquare_do",
 }
 
 
@@ -98,6 +123,11 @@ class BenchmarkSuiteTests(unittest.TestCase):
             self.assertEqual(
                 observables["total_kinetic"]["value"], expected["total_kinetic"]
             )
+            for observable_name in EXPECTED_SCALAR_OBSERVABLES:
+                self.assertIn(observable_name, observables)
+                self.assertEqual(
+                    observables[observable_name]["value"], expected[observable_name]
+                )
             self.assertEqual(
                 observables["total_NE"]["dqmc"]["operation"], "sum_last"
             )
@@ -107,6 +137,18 @@ class BenchmarkSuiteTests(unittest.TestCase):
             self.assertEqual(
                 observables["total_kinetic"]["dqmc"]["operation"], "last_times_lq"
             )
+            for observable_name in (
+                "doubleOcc",
+                "squareOcc",
+                "numsquare_up",
+                "numsquare_do",
+            ):
+                self.assertEqual(
+                    observables[observable_name]["dqmc"]["operation"], "last"
+                )
+                self.assertEqual(
+                    observables[observable_name]["dqmc"]["files"], [observable_name]
+                )
             self.assertIn("dqmc_fixture", reference)
 
     def test_makefile_exposes_real_dqmc_benchmark_target(self) -> None:
@@ -194,11 +236,24 @@ class BenchmarkSuiteTests(unittest.TestCase):
             reference = json.loads(reference_path.read_text(encoding="utf-8"))
             params = reference["parameters"]
             observables = reference["observables"]
+            self.assertEqual(set(observables), EXPECTED_SCALAR_OBSERVABLES)
             self.assertGreaterEqual(params["Nbin"], 100000)
             self.assertEqual(observables["total_NE"]["dqmc"]["operation"], "sum_mean")
             self.assertEqual(
                 observables["total_kinetic"]["dqmc"]["operation"], "mean_times_lq"
             )
+            for observable_name in (
+                "doubleOcc",
+                "squareOcc",
+                "numsquare_up",
+                "numsquare_do",
+            ):
+                self.assertEqual(
+                    observables[observable_name]["dqmc"]["operation"], "mean"
+                )
+                self.assertEqual(
+                    observables[observable_name]["dqmc"]["files"], [observable_name]
+                )
             for observable in observables.values():
                 self.assertIn("statistics", observable["dqmc"])
                 self.assertIn("stderr_tolerance", observable["dqmc"]["statistics"])

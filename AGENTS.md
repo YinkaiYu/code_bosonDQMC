@@ -72,9 +72,13 @@ Important benchmark conversions:
 ```text
 total_NE_DQMC = last(num_up) + last(num_do)
 total_kinetic_DQMC = last(kinetic) * Lq
+doubleOcc_DQMC = last(doubleOcc)
+squareOcc_DQMC = last(squareOcc)
+numsquare_up_DQMC = last(numsquare_up)
+numsquare_do_DQMC = last(numsquare_do)
 ```
 
-The ED reference script accumulates `NE = NE_b + NE_c`, and its kinetic operator includes both flavor hopping layers. The DQMC `kinetic` output includes both flavors and is normalized by `Lq` in `src/obser_equal.f90`.
+The ED reference script accumulates `NE = NE_b + NE_c`, its kinetic operator includes both flavor hopping layers, and it also reports `doubleOcc`, `squareOcc`, `numsquare_up`, and `numsquare_do`. The DQMC `kinetic` output includes both flavors and is normalized by `Lq` in `src/obser_equal.f90`. `squareOcc` is compared as the per-site half normal-ordered same-flavor onsite pair.
 
 ## Build And Benchmark Notes
 
@@ -86,7 +90,7 @@ Default benchmark:
 make benchmark
 ```
 
-This is the strict live DQMC-vs-ED suite. It runs `benchmarks/dqmc_suite.json`: one free-boson analytic case and all four ED reference cases from `temp/benchmark.txt`. All live cases use `dtau = beta / Ltrot = 0.01`; interacting cases use `Nbin = 100000`.
+This is the strict live DQMC-vs-ED suite. It runs `benchmarks/dqmc_suite.json`: one free-boson analytic case and all four ED reference cases from `temp/benchmark.txt`. It compares `total_NE`, `total_kinetic`, `doubleOcc`, `squareOcc`, `numsquare_up`, and `numsquare_do`. All live cases use `dtau = beta / Ltrot = 0.01`; interacting cases use `Nbin = 100000`.
 
 The fast benchmark is explicitly a no-interaction live DQMC run:
 
@@ -117,7 +121,7 @@ Do not run:
 make benchmark-ed
 ```
 
-unless the user explicitly asks for ED recomputation and accepts the Python dependencies and runtime cost.
+unless the user explicitly asks for ED recomputation and accepts the runtime cost.
 
 ## Verification Before Completion
 
