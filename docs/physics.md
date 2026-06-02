@@ -73,7 +73,7 @@ In code, `Prop%Gr` stores the `b` flavor matrix. `ObserEqual_mod` constructs:
 Grup  = Prop%Gr
 Grupc = transpose(Grup) - ZKRON
 Grdo  = dconjg(Prop%Gr)
-Grdoc = dconjg(transpose(Grdo)) - ZKRON
+Grdoc = transpose(Grdo) - ZKRON
 ```
 
 ## Pole Diagnostics
